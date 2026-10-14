@@ -221,6 +221,30 @@ h4 {
   opacity: 0.7;
 }
 
+@supports (animation-timeline: scroll()) {
+  .stars2 {
+    animation:
+      drift 140s linear infinite reverse,
+      parallax-near linear both;
+    animation-timeline: auto, scroll(root);
+  }
+  .stars3 {
+    animation:
+      twinkle 6s ease-in-out infinite alternate,
+      parallax-far linear both;
+    animation-timeline: auto, scroll(root);
+  }
+}
+@keyframes parallax-near {
+  to {
+    translate: 0 -160px;
+  }
+}
+@keyframes parallax-far {
+  to {
+    translate: 0 -60px;
+  }
+}
 @keyframes drift {
   to {
     transform: translate(-220px, -120px);

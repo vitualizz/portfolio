@@ -9,6 +9,12 @@ interface Props {
 const { lang } = Astro.props
 const t = useTranslation(lang)
 const bioParagraphs = t('about_me').biography
+const SCROLL_COMMANDS = [
+  undefined,
+  'cat projects.txt',
+  'cd ai',
+  'cat motto.txt'
+]
 ---
 
 <section class="s" id="about">
@@ -21,7 +27,14 @@ const bioParagraphs = t('about_me').biography
         <div
           class="about-body text-ink-soft text-[clamp(16px,1.25vw,18px)] leading-[1.75]"
         >
-          {bioParagraphs.map((p) => <p set:html={safeI18nHtml(p)} />)}
+          {
+            bioParagraphs.map((p, i) => (
+              <p
+                data-term-cmd={SCROLL_COMMANDS[i]}
+                set:html={safeI18nHtml(p)}
+              />
+            ))
+          }
           <p
             class="about-mini text-muted-custom border-line mt-[1.6em] flex items-center gap-2 border-t border-dashed pt-[1.1em] text-[14px]"
           >
@@ -80,3 +93,34 @@ const bioParagraphs = t('about_me').biography
     }
   }
 </style>
+
+<script>
+  import { loadMotion, whenIdle } from 'src/scripts/motion'
+
+  function initAboutScrollytelling() {
+    const paragraphs = Array.from(
+      document.querySelectorAll<HTMLElement>('#about [data-term-cmd]')
+    ).filter((p) => p.dataset.termCmd)
+    if (!paragraphs.length) return
+    if (!window.matchMedia('(min-width: 821px)').matches) return
+    whenIdle(async () => {
+      const motion = await loadMotion()
+      if (!motion) return
+      paragraphs.forEach((p) =>
+        motion.ScrollTrigger.create({
+          trigger: p,
+          start: 'top 55%',
+          once: true,
+          onEnter: () =>
+            window.dispatchEvent(
+              new CustomEvent('terminal:run', {
+                detail: { command: p.dataset.termCmd }
+              })
+            )
+        })
+      )
+    })
+  }
+  initAboutScrollytelling()
+  document.addEventListener('astro:page-load', initAboutScrollytelling)
+</script>

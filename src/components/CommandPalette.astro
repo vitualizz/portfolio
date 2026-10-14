@@ -302,7 +302,10 @@ const commands: Cmd[] = [
     violet: '#b6a3ff'
   }
 
+  import { loadMotion } from 'src/scripts/motion'
+
   class CommandPaletteElement extends HTMLElement {
+    private flip: Awaited<ReturnType<typeof loadMotion>> = null
     private dialog!: HTMLDialogElement
     private input!: HTMLInputElement
     private list!: HTMLElement
@@ -362,6 +365,7 @@ const commands: Cmd[] = [
     }
 
     open() {
+      if (!this.flip) loadMotion().then((m) => (this.flip = m))
       if (!this.dialog.open) this.dialog.showModal()
       this.input.value = ''
       this.render()
@@ -454,14 +458,14 @@ const commands: Cmd[] = [
             c.action === 'accent' && c.value
               ? `<span class="cp-swatch" style="background:${SWATCH[c.value]}"></span>`
               : ''
-          html += `<button type="button" class="cp-item" role="option" data-idx="${idx}">${swatch}<span>${this.esc(c.label)}</span></button>`
+          html += `<button type="button" class="cp-item" role="option" data-idx="${idx}" data-flip-id="${c.id}">${swatch}<span>${this.esc(c.label)}</span></button>`
           this.items.push({ label: c.label, run: () => this.exec(c), html: '' })
         }
       }
       if (q) {
         const idx = this.items.length
         const looksLikeQuestion = /[?¿]/.test(q) || q.split(/\s+/).length > 2
-        const askHtml = `<div class="cp-group">${this.esc(this.p.group_ask)}</div><button type="button" class="cp-item" role="option" data-idx="${idx}"><span class="cp-ask">${this.esc(this.p.ask_prefix)}</span><span>${this.esc(this.input.value.trim())}</span></button>`
+        const askHtml = `<div class="cp-group">${this.esc(this.p.group_ask)}</div><button type="button" class="cp-item" role="option" data-idx="${idx}" data-flip-id="ask"><span class="cp-ask">${this.esc(this.p.ask_prefix)}</span><span>${this.esc(this.input.value.trim())}</span></button>`
         this.items.push({
           label: q,
           run: () => this.ask(this.input.value.trim()),
@@ -481,7 +485,23 @@ const commands: Cmd[] = [
       }
       if (!this.items.length)
         html = `<div class="cp-empty">${this.esc(this.p.empty)}</div>`
+      const before = this.flip
+        ? this.flip.Flip.getState(this.list.querySelectorAll('[data-flip-id]'))
+        : null
       this.list.innerHTML = html
+      if (before && this.flip) {
+        this.flip.Flip.from(before, {
+          targets: this.list.querySelectorAll('[data-flip-id]'),
+          duration: 0.22,
+          ease: 'power2.out',
+          onEnter: (els) =>
+            this.flip!.gsap.fromTo(
+              els,
+              { opacity: 0, y: 6 },
+              { opacity: 1, y: 0, duration: 0.2 }
+            )
+        })
+      }
       this.selected = 0
       this.paintSelection()
     }

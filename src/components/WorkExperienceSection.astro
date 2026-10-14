@@ -51,6 +51,7 @@ function formatPeriod(dateStr: string): string {
     </div>
 
     <ol class="xp-list">
+      <span class="xp-line" aria-hidden="true"></span>
       {
         experienceData.map((entry, i) => (
           <li class="xp-row">
@@ -109,6 +110,32 @@ function formatPeriod(dateStr: string): string {
     padding: 0;
     max-width: 880px;
     border-top: 1px solid var(--line);
+    position: relative;
+  }
+  .xp-line {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 2px;
+    height: 100%;
+    background: var(--accent);
+    transform-origin: top;
+    transform: scaleY(0);
+    opacity: 0.7;
+  }
+  .xp-row {
+    transition: opacity 0.3s;
+  }
+  .xp-row.is-active .xp-company {
+    color: var(--accent);
+  }
+  .xp-row.is-active .xp-when {
+    color: var(--ink);
+  }
+  @media (max-width: 640px) {
+    .xp-line {
+      display: none;
+    }
   }
   .xp-row {
     display: grid;
@@ -182,3 +209,38 @@ function formatPeriod(dateStr: string): string {
     }
   }
 </style>
+
+<script>
+  import { loadMotion, whenIdle } from 'src/scripts/motion'
+
+  function initExperienceScroll() {
+    const list = document.querySelector<HTMLElement>('#xp .xp-list')
+    const line = list?.querySelector<HTMLElement>('.xp-line')
+    if (!list || !line) return
+    whenIdle(async () => {
+      const motion = await loadMotion()
+      if (!motion) return
+      const { gsap, ScrollTrigger } = motion
+      gsap.to(line, {
+        scaleY: 1,
+        ease: 'none',
+        scrollTrigger: {
+          trigger: list,
+          start: 'top 70%',
+          end: 'bottom 60%',
+          scrub: 0.6
+        }
+      })
+      list.querySelectorAll<HTMLElement>('.xp-row').forEach((row) =>
+        ScrollTrigger.create({
+          trigger: row,
+          start: 'top center',
+          end: 'bottom center',
+          onToggle: (self) => row.classList.toggle('is-active', self.isActive)
+        })
+      )
+    })
+  }
+  initExperienceScroll()
+  document.addEventListener('astro:page-load', initExperienceScroll)
+</script>

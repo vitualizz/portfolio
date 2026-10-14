@@ -430,6 +430,9 @@ const clientData = JSON.stringify({
     private input!: HTMLInputElement
     private history: string[] = []
     private historyIdx = -1
+    private userTookOver = false
+    private typing = false
+    private queued: string[] = []
 
     connectedCallback() {
       this.data = JSON.parse(this.dataset.terminal || '{}')
@@ -448,6 +451,7 @@ const clientData = JSON.stringify({
         e.preventDefault()
         const raw = input.value.trim()
         if (!raw) return
+        this.userTookOver = true
         this.history.push(raw)
         this.historyIdx = this.history.length
         input.value = ''
@@ -470,7 +474,28 @@ const clientData = JSON.stringify({
         }
       })
       out.addEventListener('click', () => input.focus())
+      input.addEventListener('input', () => {
+        this.userTookOver = true
+      })
+      window.addEventListener('terminal:run', this.onExternalRun)
       this.welcomeOnce()
+    }
+
+    disconnectedCallback() {
+      window.removeEventListener('terminal:run', this.onExternalRun)
+    }
+
+    private onExternalRun = (e: Event) => {
+      const cmd = (e as CustomEvent<{ command?: string }>).detail?.command
+      if (!cmd || this.userTookOver) return
+      if (document.activeElement === this.input) return
+      if (this.typing) this.queued.push(cmd)
+      else this.run(cmd)
+    }
+
+    private flushQueue() {
+      this.typing = false
+      this.queued.splice(0).forEach((cmd) => this.run(cmd))
     }
 
     private welcomeOnce() {
@@ -488,8 +513,10 @@ const clientData = JSON.stringify({
           if (reduced) {
             this.run(cmd)
             this.print(this.data.term.welcome)
+            this.flushQueue()
             return
           }
+          this.typing = true
           let i = 0
           const tick = () => {
             i += 1
@@ -500,6 +527,7 @@ const clientData = JSON.stringify({
                 this.input.value = ''
                 this.run(cmd)
                 this.print(this.data.term.welcome)
+                this.flushQueue()
               }, 320)
           }
           window.setTimeout(tick, 500)

@@ -14,7 +14,7 @@ const tp = t('presentation')
 <section class="hero" id="top">
   <div class="wrap">
     <div class="hero-grid">
-      <div class="hero-copy">
+      <div class="hero-copy" data-hero-copy>
         <p
           class="hero-greet text-ink-soft mb-3 font-sans font-medium"
           style="font-size:clamp(20px,2vw,26px)"
@@ -160,7 +160,7 @@ const tp = t('presentation')
         </div>
       </div>
 
-      <div class="hero-figure relative">
+      <div class="hero-figure relative" data-hero-figure>
         <span class="blob-tag">{tp.online_tag}</span>
         <img
           class="hero-character relative z-[1] h-full w-full object-contain object-bottom"
@@ -373,6 +373,36 @@ const tp = t('presentation')
 </style>
 
 <script>
+  import { loadMotion } from 'src/scripts/motion'
+
+  function initHeroEntrance() {
+    const copy = document.querySelector<HTMLElement>('[data-hero-copy]')
+    const figure = document.querySelector<HTMLElement>('[data-hero-figure]')
+    if (!copy || !figure || copy.dataset.entered === 'true') return
+    copy.dataset.entered = 'true'
+    const parts = Array.from(copy.children) as HTMLElement[]
+    loadMotion().then((motion) => {
+      if (!motion) return
+      const { gsap } = motion
+      gsap
+        .timeline({ defaults: { ease: 'power3.out' } })
+        .from(parts, {
+          opacity: 0,
+          y: 18,
+          duration: 0.6,
+          stagger: 0.07,
+          clearProps: 'all'
+        })
+        .from(
+          figure,
+          { opacity: 0, scale: 0.96, duration: 0.8, clearProps: 'all' },
+          0.15
+        )
+    })
+  }
+  initHeroEntrance()
+  document.addEventListener('astro:page-load', initHeroEntrance)
+
   function initHeroAsk() {
     const form = document.querySelector<HTMLFormElement>('[data-hero-ask]')
     if (!form || form.dataset.ready === 'true') return
