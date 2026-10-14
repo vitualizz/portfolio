@@ -318,7 +318,7 @@ const clientData = JSON.stringify({
     line-height: 1.55;
   }
   .term-out {
-    max-height: 220px;
+    max-height: 260px;
     overflow-y: auto;
     padding: 14px 18px 6px;
     display: flex;
@@ -370,6 +370,17 @@ const clientData = JSON.stringify({
   }
   .term-input::placeholder {
     color: var(--muted);
+  }
+  .stack-explorer {
+    transition: box-shadow 0.35s ease;
+  }
+  .stack-explorer.is-flashing {
+    box-shadow:
+      0 0 0 2px color-mix(in oklab, var(--accent) 60%, transparent),
+      0 20px 40px rgba(0, 0, 0, 0.25);
+  }
+  .stack-explorer.is-typing .term-prompt {
+    text-shadow: 0 0 10px color-mix(in oklab, var(--accent) 70%, transparent);
   }
   .term-form:focus-within .term-prompt {
     text-shadow: 0 0 10px color-mix(in oklab, var(--accent) 60%, transparent);
@@ -432,6 +443,7 @@ const clientData = JSON.stringify({
     private historyIdx = -1
     private userTookOver = false
     private typing = false
+    private welcomed = false
     private queued: string[] = []
 
     connectedCallback() {
@@ -489,48 +501,63 @@ const clientData = JSON.stringify({
       const cmd = (e as CustomEvent<{ command?: string }>).detail?.command
       if (!cmd || this.userTookOver) return
       if (document.activeElement === this.input) return
-      if (this.typing) this.queued.push(cmd)
-      else this.run(cmd)
+      this.enqueue(cmd)
     }
 
-    private flushQueue() {
-      this.typing = false
-      this.queued.splice(0).forEach((cmd) => this.run(cmd))
+    private enqueue(cmd: string) {
+      this.queued.push(cmd)
+      this.drain()
+    }
+
+    private drain() {
+      if (this.typing) return
+      const cmd = this.queued.shift()
+      if (!cmd) return
+      this.typing = true
+      this.classList.add('is-typing')
+      const finish = () => {
+        this.input.value = ''
+        this.run(cmd)
+        if (cmd === 'help' && !this.welcomed) {
+          this.welcomed = true
+          this.print(this.data.term.welcome)
+        }
+        this.classList.remove('is-typing')
+        this.flash()
+        this.typing = false
+        window.setTimeout(() => this.drain(), 400)
+      }
+      const reduced = window.matchMedia(
+        '(prefers-reduced-motion: reduce)'
+      ).matches
+      if (reduced) {
+        finish()
+        return
+      }
+      let i = 0
+      const tick = () => {
+        i += 1
+        this.input.value = cmd.slice(0, i)
+        if (i < cmd.length) window.setTimeout(tick, 75)
+        else window.setTimeout(finish, 280)
+      }
+      window.setTimeout(tick, 150)
+    }
+
+    private flash() {
+      this.classList.add('is-flashing')
+      window.setTimeout(() => this.classList.remove('is-flashing'), 900)
     }
 
     private welcomeOnce() {
       if (this.dataset.welcomed === 'true') return
-      const reduced = window.matchMedia(
-        '(prefers-reduced-motion: reduce)'
-      ).matches
       const obs = new IntersectionObserver(
         (entries) => {
           if (!entries.some((en) => en.isIntersecting)) return
           obs.disconnect()
           this.dataset.welcomed = 'true'
           if (document.activeElement === this.input) return
-          const cmd = 'help'
-          if (reduced) {
-            this.run(cmd)
-            this.print(this.data.term.welcome)
-            this.flushQueue()
-            return
-          }
-          this.typing = true
-          let i = 0
-          const tick = () => {
-            i += 1
-            this.input.value = cmd.slice(0, i)
-            if (i < cmd.length) window.setTimeout(tick, 110)
-            else
-              window.setTimeout(() => {
-                this.input.value = ''
-                this.run(cmd)
-                this.print(this.data.term.welcome)
-                this.flushQueue()
-              }, 320)
-          }
-          window.setTimeout(tick, 500)
+          this.enqueue('help')
         },
         { threshold: 0.6 }
       )
