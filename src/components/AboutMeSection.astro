@@ -13,14 +13,11 @@ const bioParagraphs = t('about_me').biography
 
 <section class="s" id="about">
   <div class="wrap">
-    <div class="s-head reveal">
-      <span class="s-eyebrow">{t('home').about_eyebrow}</span>
-      <h2 class="s-title" set:html={safeI18nHtml(t('home').about_title)} />
-      <p class="s-sub">{t('home').about_subtitle}</p>
-    </div>
-
     <div class="about-grid">
       <div class="reveal">
+        <h2 class="about-title">{t('home').about_title}</h2>
+        <p class="about-lead text-muted-custom">{t('home').about_subtitle}</p>
+
         <div
           class="about-body text-ink-soft text-[clamp(16px,1.25vw,18px)] leading-[1.75]"
         >
@@ -28,58 +25,16 @@ const bioParagraphs = t('about_me').biography
           <p
             class="about-mini text-muted-custom border-line mt-[1.6em] flex items-center gap-2 border-t border-dashed pt-[1.1em] text-[14px]"
           >
-            <span class="cat-emoji inline-block origin-bottom" aria-hidden="true">🐱</span>
+            <span
+              class="cat-emoji inline-block origin-bottom"
+              aria-hidden="true">🐱</span
+            >
             {t('about_me').mini_note}
           </p>
         </div>
-
-        <div
-          class="stats border-line mt-9 grid grid-cols-3 overflow-hidden rounded-[18px] border bg-[color-mix(in_oklab,var(--bg-2)_80%,transparent)]"
-        >
-          <div
-            class="stat border-line border-r px-[18px] py-[22px] text-center"
-          >
-            <div
-              class="num text-accent font-display text-[32px] leading-none font-bold tracking-[-0.02em]"
-            >
-              7+
-            </div>
-            <div
-              class="lbl text-muted-custom mt-[6px] font-mono text-[12px] tracking-[0.05em] uppercase"
-            >
-              {t('about_me').stat_years}
-            </div>
-          </div>
-          <div
-            class="stat border-line border-r px-[18px] py-[22px] text-center"
-          >
-            <div
-              class="num text-accent font-display text-[32px] leading-none font-bold tracking-[-0.02em]"
-            >
-              20+
-            </div>
-            <div
-              class="lbl text-muted-custom mt-[6px] font-mono text-[12px] tracking-[0.05em] uppercase"
-            >
-              {t('about_me').stat_projects}
-            </div>
-          </div>
-          <div class="stat px-[18px] py-[22px] text-center">
-            <div
-              class="num text-accent font-display text-[32px] leading-none font-bold tracking-[-0.02em]"
-            >
-              3
-            </div>
-            <div
-              class="lbl text-muted-custom mt-[6px] font-mono text-[12px] tracking-[0.05em] uppercase"
-            >
-              {t('about_me').stat_stack}
-            </div>
-          </div>
-        </div>
       </div>
 
-      <div class="reveal">
+      <div class="reveal about-aside">
         <StackExplorer lang={lang} />
       </div>
     </div>
@@ -93,8 +48,25 @@ const bioParagraphs = t('about_me').biography
     gap: clamp(40px, 6vw, 96px);
     align-items: start;
   }
+  .about-title {
+    font-size: clamp(34px, 4vw, 52px);
+    letter-spacing: -0.03em;
+    line-height: 1;
+    margin-bottom: 12px;
+  }
+  .about-lead {
+    font-size: 17px;
+    line-height: 1.55;
+    max-width: 44ch;
+    margin: 0 0 28px;
+    text-wrap: pretty;
+  }
   .about-body p + p {
     margin-top: 1.1em;
+  }
+  .about-aside {
+    position: sticky;
+    top: calc(var(--header-h) + 24px);
   }
   .cat-emoji {
     animation: catBob 3s ease-in-out infinite;
@@ -103,41 +75,8 @@ const bioParagraphs = t('about_me').biography
     .about-grid {
       grid-template-columns: 1fr;
     }
+    .about-aside {
+      position: static;
+    }
   }
 </style>
-
-<script>
-  function initAbout() {
-    // Animated counters
-    const stats = document.querySelectorAll<HTMLElement>('.stat .num')
-    const counterObs = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((e) => {
-          if (!e.isIntersecting || (e.target as HTMLElement).dataset.done)
-            return
-          const el = e.target as HTMLElement
-          const raw = (el.textContent || '').trim()
-          const m = raw.match(/^(\d+)(.*)$/)
-          if (!m) return
-          const target = parseInt(m[1], 10)
-          const suffix = m[2] || ''
-          el.dataset.done = '1'
-          const dur = 1400
-          const start = performance.now()
-          function step(now: number) {
-            const t = Math.min(1, (now - start) / dur)
-            const eased = 1 - Math.pow(1 - t, 3)
-            el.textContent = Math.round(target * eased) + suffix
-            if (t < 1) requestAnimationFrame(step)
-            else el.textContent = target + suffix
-          }
-          requestAnimationFrame(step)
-        })
-      },
-      { threshold: 0.4 }
-    )
-    stats.forEach((s) => counterObs.observe(s))
-  }
-  initAbout()
-  document.addEventListener('astro:page-load', initAbout)
-</script>

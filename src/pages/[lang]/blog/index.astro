@@ -43,14 +43,6 @@ function getReadingTime(body: string): number {
     <!-- ===== HERO ===== -->
     <section class="blog-hero">
       <div>
-        <!-- Eyebrow -->
-        <div
-          class="text-accent mb-[22px] inline-flex items-center gap-2.5 rounded-full border border-[color-mix(in_oklab,var(--accent)_30%,transparent)] bg-[color-mix(in_oklab,var(--accent)_10%,transparent)] px-3.5 py-1.5 font-mono text-[12px] tracking-[0.08em] uppercase"
-        >
-          <span class="bh-live" aria-hidden="true"></span>
-          {tBlog.index_eyebrow}
-        </div>
-
         <!-- Title -->
         <h1
           class="font-display mb-[18px] text-[clamp(42px,7vw,84px)] leading-none font-extrabold tracking-[-0.035em] text-balance"
@@ -70,7 +62,7 @@ function getReadingTime(body: string): number {
 
         <!-- Stats -->
         <div
-          class="border-line inline-flex overflow-hidden rounded-[14px] border bg-[color-mix(in_oklab,var(--bg-2)_80%,transparent)]"
+          class="border-line inline-flex overflow-hidden rounded-[var(--r-md)] border bg-[color-mix(in_oklab,var(--bg-2)_80%,transparent)]"
         >
           <div class="border-line border-r px-[22px] py-3.5 text-center">
             <span
@@ -78,7 +70,7 @@ function getReadingTime(body: string): number {
               >{posts.length}</span
             >
             <span
-              class="text-muted-custom mt-[5px] block font-mono text-[10.5px] tracking-[0.05em] uppercase"
+              class="text-muted-custom mt-[5px] block text-[12.5px] font-medium"
               >{tBlog.index_stat_posts}</span
             >
           </div>
@@ -88,7 +80,7 @@ function getReadingTime(body: string): number {
               >{uniquePrimaryTags.length}</span
             >
             <span
-              class="text-muted-custom mt-[5px] block font-mono text-[10.5px] tracking-[0.05em] uppercase"
+              class="text-muted-custom mt-[5px] block text-[12.5px] font-medium"
               >{tBlog.index_stat_topics}</span
             >
           </div>
@@ -98,7 +90,7 @@ function getReadingTime(body: string): number {
               >3</span
             >
             <span
-              class="text-muted-custom mt-[5px] block font-mono text-[10.5px] tracking-[0.05em] uppercase"
+              class="text-muted-custom mt-[5px] block text-[12.5px] font-medium"
               >{tBlog.index_stat_cats}</span
             >
           </div>
@@ -125,12 +117,15 @@ function getReadingTime(body: string): number {
       id="blogFilter"
       class="border-line sticky top-[84px] z-20 mb-7 flex flex-wrap items-center gap-2.5 rounded-2xl border bg-[color-mix(in_oklab,var(--bg-2)_80%,transparent)] px-[22px] py-[18px] backdrop-blur-xl"
     >
-      <span
-        class="text-muted-custom mr-1 font-mono text-[11px] tracking-[0.06em] uppercase"
+      <span class="text-muted-custom mr-1 text-[13px] font-medium"
         >{tBlog.filter_label}</span
       >
 
-      <button class="bf-chip bf-chip-active" data-filter="all" aria-pressed="true">
+      <button
+        class="bf-chip bf-chip-active"
+        data-filter="all"
+        aria-pressed="true"
+      >
         {tBlog.filter_all}
         <span class="font-mono text-[10.5px] opacity-65">{posts.length}</span>
       </button>
@@ -217,7 +212,7 @@ function getReadingTime(body: string): number {
               </div>
 
               <div class="flex flex-1 flex-col px-6 pt-[22px] pb-6">
-                <div class="text-muted-custom mb-3.5 flex flex-wrap items-center gap-2.5 font-mono text-[11px] tracking-[0.05em] uppercase">
+                <div class="text-muted-custom mb-3.5 flex flex-wrap items-center gap-2.5 text-[12.5px] font-medium">
                   {tag && (
                     <span class="text-accent rounded-full border border-[color-mix(in_oklab,var(--accent)_35%,var(--line))] bg-[color-mix(in_oklab,var(--accent)_8%,transparent)] px-2.5 py-[3px] font-semibold">
                       {formatTag(tag)}
@@ -245,11 +240,8 @@ function getReadingTime(body: string): number {
                   {post.data.shortDescription}
                 </p>
 
-                <div class="text-accent mt-auto flex items-center justify-between font-mono text-[12px]">
-                  <span>{tBlog.read_article}</span>
-                  <span class="bp-arrow transition-transform duration-[250ms]">
-                    ↗
-                  </span>
+                <div class="text-accent mt-auto text-[13px] font-semibold">
+                  {tBlog.read_article}
                 </div>
               </div>
             </a>
@@ -260,7 +252,7 @@ function getReadingTime(body: string): number {
       <!-- Empty state -->
       <div
         id="emptyState"
-        class="border-line col-span-full hidden rounded-[18px] border border-dashed bg-[color-mix(in_oklab,var(--bg-2)_60%,transparent)] px-6 py-[60px] text-center"
+        class="border-line col-span-full hidden rounded-[var(--r-lg)] border border-dashed bg-[color-mix(in_oklab,var(--bg-2)_60%,transparent)] px-6 py-[60px] text-center"
       >
         <div class="e-cat mb-3.5 inline-block text-[56px] leading-none">🙀</div>
         <h4
@@ -274,7 +266,7 @@ function getReadingTime(body: string): number {
 
     <!-- ===== CLOSING SECTION ===== -->
     <section
-      class="blog-closer relative mt-[clamp(56px,8vw,88px)] overflow-hidden rounded-[24px] border border-[color-mix(in_oklab,var(--accent)_30%,var(--line))] p-[clamp(36px,5vw,60px)] text-center"
+      class="blog-closer relative mt-[clamp(56px,8vw,88px)] overflow-hidden rounded-[var(--r-lg)] border border-[color-mix(in_oklab,var(--accent)_30%,var(--line))] p-[clamp(36px,5vw,60px)] text-center"
     >
       <h2
         class="font-display relative mb-3.5 text-[clamp(28px,4vw,40px)] leading-[1.05] font-bold tracking-[-0.03em] text-balance"
@@ -305,7 +297,7 @@ function getReadingTime(body: string): number {
 
     <!-- ===== MASCOT ROW ===== -->
     <div
-      class="text-muted-custom mt-10 mb-8 flex items-center justify-center gap-4 font-mono text-[12px] tracking-[0.05em] uppercase"
+      class="text-muted-custom mt-10 mb-8 flex items-center justify-center gap-4 text-[13px]"
     >
       <span class="sleeping-cat">
         <span class="body">😺</span>
@@ -329,26 +321,6 @@ function getReadingTime(body: string): number {
     .blog-hero {
       grid-template-columns: 1fr;
       gap: 32px;
-    }
-  }
-
-  /* Live dot */
-  .bh-live {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--mint);
-    box-shadow: 0 0 0 4px color-mix(in oklab, var(--mint) 25%, transparent);
-    animation: bh-pulse 2s ease-in-out infinite;
-    flex-shrink: 0;
-  }
-  @keyframes bh-pulse {
-    0%,
-    100% {
-      box-shadow: 0 0 0 4px color-mix(in oklab, var(--mint) 25%, transparent);
-    }
-    50% {
-      box-shadow: 0 0 0 7px color-mix(in oklab, var(--mint) 10%, transparent);
     }
   }
 
@@ -413,7 +385,7 @@ function getReadingTime(body: string): number {
     position: absolute;
     background: var(--bg);
     border: 1px solid var(--line);
-    border-radius: 12px;
+    border-radius: var(--r-sm);
     padding: 8px 12px;
     font-family: var(--font-mono);
     font-size: 11.5px;
@@ -527,7 +499,7 @@ function getReadingTime(body: string): number {
   .bp-card {
     background: var(--bg-2);
     border: 1px solid var(--line);
-    border-radius: 18px;
+    border-radius: var(--r-lg);
     overflow: hidden;
     display: flex;
     flex-direction: column;
@@ -651,11 +623,6 @@ function getReadingTime(body: string): number {
     display: inline-block;
   }
 
-  /* Arrow hover */
-  .bp-card:hover .bp-arrow {
-    transform: translate(4px, -4px);
-  }
-
   /* Empty state cat */
   .e-cat {
     animation: bh-cat-tilt 3s ease-in-out infinite;
@@ -687,7 +654,6 @@ function getReadingTime(body: string): number {
 
   /* Reduced motion */
   @media (prefers-reduced-motion: reduce) {
-    .bh-live,
     .bh-cat-emoji,
     .bh-island,
     .bh-scrap-1,
@@ -703,9 +669,6 @@ function getReadingTime(body: string): number {
       transform: none;
     }
     .bp-card:hover .bp-cover-img {
-      transform: none;
-    }
-    .bp-card:hover .bp-arrow {
       transform: none;
     }
   }

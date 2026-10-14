@@ -20,7 +20,7 @@ const {
 >
   <div
     id="ask-ai-card"
-    class="ask-ai-card from-bg-2 to-bg-2/80 border-line relative overflow-hidden rounded-[18px] border bg-gradient-to-b shadow-[0_18px_40px_rgba(0,0,0,0.28)]"
+    class="ask-ai-card from-bg-2 to-bg-2/80 border-line relative overflow-hidden rounded-[var(--r-lg)] border bg-gradient-to-b shadow-[0_18px_40px_rgba(0,0,0,0.28)]"
   >
     <div class="flex items-center gap-2.5 px-4 pt-3.5 pb-2">
       <span
@@ -40,7 +40,7 @@ const {
 
     <p class="text-muted-custom m-0 px-4 pb-3 text-[12.5px] leading-[1.5]">
       Un asistente que <b class="text-ink-soft">leyó este post</b> y responde como
-      si fuera yo. Hacé preguntas técnicas o pedí un resumen.
+      si fuera yo. Haz preguntas técnicas o pide un resumen.
     </p>
 
     <div class="flex flex-wrap gap-1.5 px-4 pb-3">
@@ -180,7 +180,7 @@ const {
     padding: 10px 12px;
     background: color-mix(in oklab, var(--bg) 60%, transparent);
     border: 1px solid var(--line);
-    border-radius: 12px;
+    border-radius: var(--r-sm);
     font-size: 13px;
     line-height: 1.55;
     color: var(--ink);
@@ -352,7 +352,7 @@ const {
       } catch {
         if (thinking)
           thinking.querySelector('.aai-bubble')!.innerHTML =
-            `<p>Algo se cayó. Intentá de nuevo.</p>`
+            `<p>Algo se cayó. Intenta de nuevo.</p>`
       } finally {
         if (sendBtn) sendBtn.disabled = false
         if (input) input.focus()

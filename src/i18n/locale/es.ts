@@ -7,40 +7,35 @@ const locale: LanguageLocale = {
     projects: 'Proyectos',
     contact_me: 'Contáctame',
     blog: 'Blog',
-    work_experience: 'Experiencia',
-    ask_ai: 'Pregúntale',
     resume_label: 'Currículum',
     switch_language: 'Cambiar idioma',
-    language_name: 'Español',
-    language_option: 'Cambiar a {language}'
+    language_option: 'Cambiar a {language}',
+    toggle_theme: 'Cambiar tema',
+    open_menu: 'Abrir menú',
+    close_menu: 'Cerrar menú',
+    main_navigation: 'Navegación principal',
+    mobile_navigation: 'Navegación móvil'
   },
   home: {
-    about_eyebrow: '// 01 · Sobre mí',
-    about_title: "Acerca de <span class='hl-title'>mí</span>",
+    about_title: 'Acerca de mí',
     about_subtitle:
       'El humano detrás del código — qué me mueve, qué hago, y qué tengo en la caja de herramientas.',
-    ai_eyebrow: '// 02 · Lab',
-    ai_title: "Pregúntale a Lee <span class='hl-title'>↳ vía IA</span>",
+    ai_title: 'Pregúntale a Lee',
     ai_subtitle:
-      'Una IA entrenada con mi CV, stacks y proyectos. Hazle preguntas técnicas, sobre mi experiencia, o lo que sea.',
-    projects_eyebrow: '// 03 · Proyectos',
-    projects_title: "Trabajo <span class='hl-title'>seleccionado</span>",
+      'Una IA entrenada con mi CV, mi stack y mis proyectos. Hazle preguntas técnicas, sobre mi experiencia o lo que quieras.',
+    projects_title: 'Trabajo seleccionado',
     projects_subtitle:
-      'Trabajo enviado a producción. Click para ver demo o código.',
-    xp_eyebrow: '// 04 · Experiencia',
-    xp_title: "Mi <span class='hl-title'>recorrido</span>",
+      'Producto en producción. Cada tarjeta abre la demo o el código.',
+    xp_title: 'Mi recorrido',
     xp_subtitle:
       'Cuatro paradas profesionales, una constante: producto que se envía.',
-    blog_eyebrow: '// 05 · Notas',
-    blog_title: "Lo que <span class='hl-title'>escribo</span>",
+    blog_title: 'Lo que escribo',
     blog_subtitle: 'Notas técnicas sobre lo que voy aprendiendo.',
-    contact_title:
-      "Hablemos<br/>Contame sobre tu <em class='not-italic hl'>proyecto</em> ✨",
+    contact_title: 'Hablemos.<br/>Cuéntame sobre tu proyecto.',
     contact_subtitle:
-      'Si estás armando equipo y buscás a alguien que tome ownership de punta a punta, ordene arquitectura y sostenga entregas reales, hablemos. Me muevo cómodo entre producto, backend y negocio, y respondo en menos de 24 horas hábiles.',
-    contact_download_cv: 'Descargar CV',
+      'Si estás armando equipo y buscas a alguien que tome ownership de punta a punta, ordene la arquitectura y sostenga entregas reales, hablemos. Me muevo cómodo entre producto, backend y negocio, y respondo en menos de 24 horas hábiles.',
     paused_label: 'pausado',
-    footer_location_line: 'Lima · UTC −5 · ES / EN',
+    footer_location_line: 'Lima, UTC−5. Español e inglés.',
     quote_text:
       "El código es la parte fácil. <span class='hl'>Enviar producto que aguante</span> — y que el equipo entienda al volver el lunes — es el trabajo.",
     stack_legend_core: 'Core',
@@ -48,23 +43,19 @@ const locale: LanguageLocale = {
     stack_legend_learn: 'Aprendiendo'
   },
   presentation: {
-    hi: 'Hola, 🚀',
+    hi: 'Hola,',
     i_am: "Soy <span class='hl text-nowrap'>Lee Palacios</span>",
-    profession: 'Ingeniero de Software y amante de los gatos 🐱',
+    profession: 'Senior Fullstack Engineer y AI Builder',
     description:
       "<span class='hl'>+7 años</span> entregando producto <strong class='text-ink'>end‑to‑end</strong> en startups LATAM. <strong class='text-ink'>API, base de datos, UI e infra</strong> — la cadena completa, sin pasar la pelota. TypeScript, React, Rails, Python, AWS. Cuando la feature lo pide, también agentes de IA en producción.",
     description_ps:
       'PD: mis tres gatos revisan cada PR antes que cualquier humano. Aún no me han aprobado un rebase --force.',
-    typewriter_words:
-      'Senior Fullstack Engineer|TypeScript · React · Rails · Python|De Postgres al pixel|AI Builder · LLM orchestration|Cat dad · 3 gatos',
-    tagline:
-      'Construyo sistemas que escalan, productos que se envían y equipos que avanzan.',
-    cta_primary: 'Ver mis proyectos',
-    cta_secondary: 'Contactarme'
+    online_tag: 'vitualizz en línea',
+    ask_label: 'Pregúntale algo a mi IA',
+    ask_placeholder: 'Pregúntale algo a mi IA: ¿qué stack usas?',
+    ask_submit: 'Preguntar'
   },
   about_me: {
-    section_about_me: 'Acerca de mí',
-    section_skills: 'Habilidades',
     biography: [
       "Empecé a programar a los <span class='hl-soft'>12 años</span> queriendo vender origamis por internet — el primer HTML que escribí fue una página de producto. A los <span class='hl-soft'>15 ya cobraba</span> por escribir software — antes de saber cómo se llamaba el oficio.",
       "Desde entonces, mi carrera ha sido un recorrido por startups LATAM: de <strong class='text-ink'>developer</strong> a <strong class='text-ink'>Tech Lead</strong> a <strong class='text-ink'>Senior IC</strong>. Construí un sistema de campañas para influencers desde cero, optimicé una plataforma SaaS usada por miles de edificios, y refactoricé stacks que un equipo entero heredó sin documentación. Cada parada me dejó lo mismo: <span class='hl-soft'>producto que se envía</span>.",
@@ -72,57 +63,76 @@ const locale: LanguageLocale = {
       "Caja de herramientas rápida: <strong class='text-ink'>TypeScript, React/React Native, Rails, Python, Postgres, AWS</strong>. El detalle vive en mi CV — ahí también está el resto del recorrido."
     ],
     mini_note:
-      'Lima · ES nativo / EN fluido · tres gatos que aprueban mi código.',
-    skills_section_frameworks: 'Frameworks y Bibliotecas',
-    skills_section_others: 'Otros',
-    skills_section_languages: 'Lenguajes',
-    stat_years: 'Años de exp.',
-    stat_projects: 'Proyectos',
-    stat_stack: 'Full Stack',
+      'Lima. Español nativo, inglés fluido. Tres gatos que aprueban mi código.',
     stack_footer:
       '→ alguien que prefiere <b>aprender una herramienta a fondo</b> que coleccionar 20 logos en el CV.'
   },
-  work_experience: {
-    title: 'Experiencia',
-    present: 'Actualidad',
-    show_more: 'Ver más',
-    show_less: 'Ver menos'
+  terminal: {
+    placeholder: 'escribe un comando, por ejemplo: help',
+    help: 'comandos: help, ls, cat <archivo>, cd <carpeta>, whoami, ask <pregunta>, meow, clear',
+    not_found: 'comando no encontrado: {cmd}. Escribe help.',
+    no_file: 'no existe: {file}. Prueba ls.',
+    whoami:
+      'lee · Senior Fullstack Engineer · 7+ años, 20+ proyectos en producción, 3 gatos · Lima',
+    cd_done: 'ahora en ~/stack/{dir}',
+    cd_missing: 'carpeta no encontrada: {dir}. Prueba ls stack.',
+    ask_sent: 'pregunta enviada a Lee IA. Bajando a la respuesta.',
+    ask_empty: 'uso: ask <tu pregunta>',
+    meow: 'miau. se escaparon unos gatos.',
+    contact_lines: [
+      'github:   https://github.com/vitualizz',
+      'linkedin: https://linkedin.com/in/vitualizz',
+      'formulario: escribe "contact" o baja al final de la página'
+    ],
+    open_done: 'abriendo {name} en una pestaña nueva',
+    open_missing: 'proyecto no encontrado: {name}. Prueba cat projects.txt',
+    theme_done: 'tema: {theme}',
+    accent_done: 'acento: {accent}',
+    accent_missing: 'acentos disponibles: yellow, coral, mint, violet',
+    welcome: 'escribe help o pulsa Tab para autocompletar'
+  },
+  palette: {
+    hint: 'Pulsa ⌘K',
+    title: 'Paleta de comandos',
+    placeholder: 'Escribe un comando o una pregunta para la IA…',
+    group_go: 'Ir a',
+    group_do: 'Acciones',
+    group_ask: 'Preguntar a Lee IA',
+    ask_prefix: 'Preguntar:',
+    empty: 'Sin comandos. Pulsa Enter para preguntárselo a la IA.',
+    go_about: 'Sobre mí',
+    go_ai: 'Pregúntale a Lee',
+    go_projects: 'Proyectos',
+    go_xp: 'Experiencia',
+    go_blog: 'Blog',
+    go_contact: 'Contacto',
+    toggle_theme: 'Cambiar tema claro / oscuro',
+    accent_yellow: 'Acento amarillo',
+    accent_coral: 'Acento coral',
+    accent_mint: 'Acento menta',
+    accent_violet: 'Acento violeta',
+    switch_lang: 'Switch to English',
+    download_cv: 'Descargar currículum',
+    open_github: 'Abrir GitHub',
+    open_linkedin: 'Abrir LinkedIn',
+    meow: 'Soltar gatos'
   },
   projects: {
-    section_projects: 'Proyectos',
-    live_preview: 'Ver sitio',
-    github_label: 'Ver código',
-    view_image: 'Ver imagen'
-  },
-  contact_me: {
-    tell_me: 'Hablemos</br>Cuéntame sobre tu Proyecto',
-    send_message_me: 'Envíame un mensaje ✨',
-    resume_label: 'Curriculum',
-    form: {
-      name_label: 'Nombre',
-      name_placeholder: 'Tu nombre',
-      email_label: 'Email',
-      email_placeholder: 'tu@email.com',
-      message_label: 'Mensaje',
-      message_placeholder: '¿En qué puedo ayudarte?',
-      submit: 'Enviar mensaje',
-      submitting: 'Enviando...',
-      success: '¡Mensaje enviado! Me pondré en contacto pronto.',
-      error: 'Error al enviar. Intentá de nuevo.'
-    }
+    live_preview: 'Ver proyecto',
+    ask_about: 'Preguntar a la IA',
+    ask_about_question:
+      'Cuéntame sobre {title}: qué problema resolvía, qué hizo Lee y con qué stack.'
   },
   footer: {
     thanks: 'Con amor @vitualizz'
   },
   blog: {
     title: 'Últimos Posts',
-    read_more: 'Leer más',
     read_article: 'Leer artículo',
     back_to_blog: '← Volver al blog',
-    min_read: 'MIN DE LECTURA',
+    min_read: 'min de lectura',
     see_all: 'Ver todos los posts',
-    index_eyebrow: 'Blog · vitualizz',
-    index_title: "Notas del <span class='text-accent'>campo</span> de batalla",
+    index_title: 'Notas del campo de batalla',
     index_subtitle:
       'Lo que voy aprendiendo construyendo backends, agentes y SaaS en producción. Sin hype, sin "10 razones por las que…" — solo código, decisiones y a veces los tres gatos opinando al lado.',
     index_stat_posts: 'Posts',
@@ -136,21 +146,20 @@ const locale: LanguageLocale = {
       "¿Quieres recibir los nuevos posts <span class='text-accent'>antes que nadie</span>?",
     closer_text:
       'Por ahora no tengo newsletter — pero puedes seguirme en GitHub o LinkedIn, y si te gustó algo, escríbeme. Respondo a todo lo que llega.',
-    closer_github: 'Seguirme en GitHub ↗',
+    closer_github: 'Seguirme en GitHub',
     closer_contact: 'Escríbeme',
     mascot_text: 'fin de la lista — vuelve pronto, los gatos también escriben',
     empty_title: 'Ningún post coincide',
     empty_text:
       'Prueba con otro tag o limpia la búsqueda. Los gatos también se confunden a veces.',
     follow_label: 'Mantente en contacto',
-    follow_title: '¿Querés seguir en contacto?',
+    follow_title: '¿Quieres seguir en contacto?',
     follow_body:
       'Si te sirvió este post, la mejor forma de seguir mi trabajo es GitHub y LinkedIn — publico ahí primero.',
     follow_github: 'Seguirme en GitHub',
     follow_linkedin: 'Conectar en LinkedIn',
     post_nav_prev: '← Anterior',
     post_nav_next: 'Siguiente →',
-    more_posts_eyebrow: '// Más notas',
     more_posts_title: 'Otras cosas que escribí',
     share_prompt: '¿Te sirvió?',
     share_cta: 'Compartir',
@@ -158,8 +167,8 @@ const locale: LanguageLocale = {
   },
   ai: {
     greeting:
-      '¿Qué querés saber? Preguntame sobre <b class="hl">backend</b>, <b class="hl">arquitectura</b>, <b class="hl">agentes de IA</b>, <b class="hl">Postgres</b> o proyectos reales en producción 🐱.',
-    hint: 'Tip: prueba un atajo arriba ↑ o escribe tu propia pregunta abajo ↓',
+      'Pregúntame sobre <b class="hl">backend</b>, <b class="hl">arquitectura</b>, <b class="hl">agentes de IA</b>, <b class="hl">Postgres</b> o proyectos reales en producción.',
+    hint: 'Elige una pregunta sugerida o escribe la tuya.',
     input_placeholder: 'Escribe tu pregunta para Lee...',
     send_aria: 'Enviar',
     thinking: 'pensando...',
@@ -167,9 +176,15 @@ const locale: LanguageLocale = {
     crash_fallback:
       'Ups, algo se cayó. Escríbeme directo por el formulario de contacto.',
     user_avatar: 'TÚ',
+    consulting: 'consultando',
+    sources_label: 'Fuentes',
+    agent_experience: 'experiencia',
+    agent_projects: 'proyectos',
+    agent_skills: 'stack',
+    agent_blog: 'blog',
     disclaimer:
       'La IA puede cometer errores o inventar cosas. Para lo que realmente importa,',
-    disclaimer_link: 'escribime directo →',
+    disclaimer_link: 'escríbeme directo.',
     tabs: {
       backend:
         '¿Cuál ha sido tu proyecto backend más complejo y qué aprendiste de él?',
@@ -181,15 +196,14 @@ const locale: LanguageLocale = {
         '¿Qué buscas en tu próximo equipo? ¿Qué tipo de cultura te hace feliz?'
     },
     tab_labels: {
-      backend: 'backend ↗',
-      ai_builder: 'ai builder ↗',
-      postgres: 'postgres ↗',
-      culture: 'cultura ↗'
+      backend: 'Backend',
+      ai_builder: 'AI builder',
+      postgres: 'Postgres',
+      culture: 'Cultura'
     }
   },
   contact_modal: {
     close_aria: 'Cerrar',
-    eyebrow: '// Hablemos',
     title: 'Cuéntame sobre tu proyecto',
     subtitle:
       'Respondo en menos de 24 horas hábiles. Para algo urgente, ping también por LinkedIn.',

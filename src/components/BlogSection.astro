@@ -1,7 +1,6 @@
 ---
 import { useTranslation } from 'src/i18n/utils'
 import { BLOG_DATE_LOCALE, withLangPath } from 'src/i18n/constants'
-import { safeI18nHtml } from 'src/components/shared/i18nRichText'
 import type { CollectionEntry } from 'astro:content'
 
 interface Props {
@@ -15,8 +14,7 @@ const t = useTranslation(lang)
 <section class="s" id="blog">
   <div class="wrap">
     <div class="s-head reveal">
-      <span class="s-eyebrow">{t('home').blog_eyebrow}</span>
-      <h2 class="s-title" set:html={safeI18nHtml(t('home').blog_title)} />
+      <h2 class="s-title">{t('home').blog_title}</h2>
       <p class="s-sub">{t('home').blog_subtitle}</p>
     </div>
 
@@ -30,11 +28,11 @@ const t = useTranslation(lang)
           )
           return (
             <a
-              class="blog-card bg-bg-2 border-line text-ink reveal relative flex cursor-pointer flex-col overflow-hidden rounded-[18px] border px-[26px] pt-[26px] pb-[22px] text-left transition-[transform,border-color,box-shadow] duration-[350ms] ease-[cubic-bezier(.2,.7,.3,1)]"
+              class="blog-card bg-bg-2 border-line text-ink relative flex cursor-pointer flex-col overflow-hidden rounded-[var(--r-lg)] border px-[26px] pt-[26px] pb-[22px] text-left transition-[transform,border-color,box-shadow] duration-[350ms] ease-[cubic-bezier(.2,.7,.3,1)]"
               href={`/${lang}/blog/${slug}`}
             >
-              <div class="text-muted-custom mb-4 flex items-center gap-3 font-mono text-[11px] tracking-[0.04em] uppercase">
-                <span class="blog-tag text-accent rounded-full border border-[color-mix(in_oklab,var(--accent)_35%,var(--line))] bg-[color-mix(in_oklab,var(--accent)_8%,transparent)] px-2 py-[2px]">
+              <div class="text-muted-custom mb-4 flex items-center gap-3 text-[12.5px] font-medium">
+                <span class="blog-tag text-accent rounded-full border border-[color-mix(in_oklab,var(--accent)_35%,var(--line))] bg-[color-mix(in_oklab,var(--accent)_8%,transparent)] px-2.5 py-[2px] capitalize">
                   {post.data.tags[0]}
                 </span>
                 <span class="text-muted-custom">{date}</span>
@@ -45,11 +43,8 @@ const t = useTranslation(lang)
               <p class="text-muted-custom mb-[18px] flex-1 text-[14.5px] leading-[1.6]">
                 {post.data.shortDescription}
               </p>
-              <div class="blog-foot text-accent flex items-center justify-between font-mono text-[12px]">
-                <span>{t('blog').read_article}</span>
-                <span class="arrow transition-transform duration-[250ms]">
-                  ↗
-                </span>
+              <div class="blog-foot text-accent text-[13px] font-semibold">
+                {t('blog').read_article}
               </div>
             </a>
           )
@@ -63,7 +58,6 @@ const t = useTranslation(lang)
         class="border-line text-ink-soft hover:border-accent hover:text-accent inline-flex items-center gap-2.5 rounded-full border bg-[color-mix(in_oklab,var(--bg-2)_80%,transparent)] px-6 py-3 text-[14px] font-medium transition-[border-color,color,transform] duration-200 hover:-translate-y-0.5"
       >
         {t('blog').see_all}
-        <span class="text-[16px]">↗</span>
       </a>
     </div>
   </div>
@@ -89,8 +83,5 @@ const t = useTranslation(lang)
     transform: translateY(-6px);
     border-color: color-mix(in oklab, var(--accent) 40%, var(--line));
     box-shadow: 0 24px 40px rgba(0, 0, 0, 0.3);
-  }
-  .blog-card:hover .blog-foot .arrow {
-    transform: translate(4px, -4px);
   }
 </style>

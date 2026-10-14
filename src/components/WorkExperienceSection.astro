@@ -45,83 +45,140 @@ function formatPeriod(dateStr: string): string {
 
 <section class="s" id="xp">
   <div class="wrap">
-    <div class="s-head reveal">
-      <span class="s-eyebrow">{t('home').xp_eyebrow}</span>
-      <h2 class="s-title" set:html={safeI18nHtml(t('home').xp_title)} />
+    <div class="xp-head reveal">
+      <h2 class="s-title">{t('home').xp_title}</h2>
       <p class="s-sub">{t('home').xp_subtitle}</p>
     </div>
 
-    <div
-      class="xp relative flex flex-col"
-      style="max-width:880px;margin:0 auto"
-    >
+    <ol class="xp-list">
       {
         experienceData.map((entry, i) => (
-          <div
-            class={`xp-item relative grid gap-7 py-[22px] reveal${entry.period.end === null ? ' current' : ''}`}
-            style="grid-template-columns:24px 1fr"
-          >
-            <div class="xp-bullet bg-bg border-accent mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2">
-              <span class="core bg-accent h-2 w-2 rounded-full" />
-            </div>
-            <div class="xp-content">
-              <div class="mb-1 flex flex-wrap items-baseline gap-3">
-                <span class="xp-period text-muted-custom font-mono text-[12px] tracking-[0.05em] uppercase">
-                  {formatPeriod(entry.period.start)} —{' '}
-                  {entry.period.end === null ? (
-                    <span class="text-accent font-medium">
-                      {lang === 'es' ? 'Actualidad' : 'Present'}
-                    </span>
-                  ) : (
-                    formatPeriod(entry.period.end)
-                  )}
+          <li class="xp-row">
+            <div class="xp-when">
+              <span>{formatPeriod(entry.period.start)}</span>
+              <span class="xp-sep" aria-hidden="true" />
+              {entry.period.end === null ? (
+                <span class="text-accent">
+                  {lang === 'es' ? 'Actualidad' : 'Present'}
                 </span>
-              </div>
-              <h3 class="my-1 text-[24px] font-bold tracking-[-0.02em]">
+              ) : (
+                <span>{formatPeriod(entry.period.end)}</span>
+              )}
+            </div>
+            <div class="xp-main">
+              <h3 class="xp-company">
                 {entry.company}
                 {i === experienceData.length - 1 && (
-                  <span style="color:var(--muted);font-weight:500;font-size:0.7em;">
-                    {' '}
-                    — {t('home').paused_label}
-                  </span>
+                  <span class="xp-paused">{t('home').paused_label}</span>
                 )}
               </h3>
-              <div class="text-coral mb-[10px] text-[15px] font-medium">
-                {entry.role}
-              </div>
+              <div class="xp-role text-coral">{entry.role}</div>
               <p
-                class="text-ink-soft mb-3 max-w-[60ch] text-[15px] leading-[1.65]"
+                class="xp-desc text-ink-soft"
                 set:html={safeI18nHtml(
                   lang === 'es' ? entry.description_es : entry.description_en
                 )}
               />
-              <div class="text-muted-custom flex flex-wrap gap-[5px] font-mono text-[11px]">
-                {entry.tech.map((t) => (
-                  <span class="border-line rounded-full border px-2 py-[3px]">
-                    {t}
-                  </span>
+              <div class="xp-tech text-muted-custom">
+                {entry.tech.map((tech) => (
+                  <span>{tech}</span>
                 ))}
               </div>
             </div>
-          </div>
+          </li>
         ))
       }
-    </div>
+    </ol>
   </div>
 </section>
 
 <style>
-  .xp::before {
-    content: '';
-    position: absolute;
-    left: 11px;
-    top: 18px;
-    bottom: 18px;
-    width: 2px;
-    background: linear-gradient(to bottom, var(--accent), transparent 90%);
-    opacity: 0.4;
+  .xp-head {
+    max-width: 880px;
+    margin: 0 auto clamp(28px, 4vw, 44px);
   }
-  .xp-item.current .xp-bullet .core {
-    box-shadow: 0 0 0 5px color-mix(in oklab, var(--accent) 30%, transparent);
+  .xp-head .s-title {
+    text-align: left;
+  }
+  .xp-head .s-sub {
+    margin: 0;
+  }
+  .xp-list {
+    list-style: none;
+    margin: 0 auto;
+    padding: 0;
+    max-width: 880px;
+    border-top: 1px solid var(--line);
+  }
+  .xp-row {
+    display: grid;
+    grid-template-columns: 168px 1fr;
+    gap: 24px;
+    padding: 28px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .xp-when {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding-top: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--muted);
+  }
+  .xp-sep {
+    width: 18px;
+    height: 1px;
+    background: var(--line);
+    margin: 4px 0;
+  }
+  .xp-company {
+    font-size: 24px;
+    letter-spacing: -0.02em;
+    margin: 0 0 4px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 10px;
+  }
+  .xp-paused {
+    font-family: var(--font-sans);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--muted);
+    letter-spacing: 0;
+  }
+  .xp-role {
+    font-size: 15px;
+    font-weight: 500;
+    margin-bottom: 10px;
+  }
+  .xp-desc {
+    max-width: 62ch;
+    font-size: 15px;
+    line-height: 1.65;
+    margin: 0 0 14px;
+  }
+  .xp-tech {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 14px;
+    font-size: 13px;
+  }
+  @media (max-width: 640px) {
+    .xp-row {
+      grid-template-columns: 1fr;
+      gap: 8px;
+      padding: 22px 0;
+    }
+    .xp-when {
+      flex-direction: row;
+      align-items: center;
+      gap: 8px;
+      padding-top: 0;
+    }
+    .xp-sep {
+      margin: 0;
+    }
   }
 </style>

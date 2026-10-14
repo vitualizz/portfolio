@@ -3,7 +3,12 @@ import { getLangFromUrl } from '../i18n/utils'
 import { useTranslation } from 'src/i18n/utils'
 import ResumeActions from 'src/components/ResumeActions.astro'
 import ThemeToggle from 'src/components/ThemeToggle.astro'
-import { LANG_CODES, SECTION_IDS, withLangPath, CV_PATH_BY_LANG } from 'src/i18n/constants'
+import {
+  LANG_CODES,
+  SECTION_IDS,
+  withLangPath,
+  CV_PATH_BY_LANG
+} from 'src/i18n/constants'
 const lang = getLangFromUrl(Astro.url)
 const t = useTranslation(lang)
 ---
@@ -11,6 +16,7 @@ const t = useTranslation(lang)
 <portfolio-navbar>
   <header
     class="topbar sticky top-0 z-30"
+    transition:name="site-header"
     style="background:color-mix(in oklab, var(--bg) 75%, transparent);backdrop-filter:blur(14px) saturate(140%);-webkit-backdrop-filter:blur(14px) saturate(140%);border-bottom:1px solid color-mix(in oklab, var(--line) 80%, transparent)"
   >
     <div
@@ -28,7 +34,10 @@ const t = useTranslation(lang)
         <span>vitualizz</span>
       </a>
 
-      <nav class="nav-links flex gap-8 text-[14.5px] font-medium" aria-label="Main navigation">
+      <nav
+        class="nav-links flex gap-8 text-[14.5px] font-medium"
+        aria-label={t('nav').main_navigation}
+      >
         <a href={withLangPath(lang, `#${SECTION_IDS.about}`)} data-nav
           >{t('nav').about_me}</a
         >
@@ -45,6 +54,15 @@ const t = useTranslation(lang)
       </nav>
 
       <div class="nav-right flex items-center gap-[14px]">
+        <button
+          type="button"
+          class="palette-hint"
+          data-open-palette
+          aria-label={t('palette').title}
+          title={t('palette').title}
+        >
+          <span>{t('palette').hint}</span>
+        </button>
         <div class="resume-desktop">
           <ResumeActions
             lang={lang}
@@ -61,13 +79,13 @@ const t = useTranslation(lang)
             {lang.toUpperCase()}
           </summary>
           <div
-            class="border-line bg-bg-2 absolute top-[calc(100%+8px)] right-0 z-20 min-w-[130px] rounded-[12px] border p-1"
+            class="border-line bg-bg-2 absolute top-[calc(100%+8px)] right-0 z-20 min-w-[130px] rounded-[var(--r-sm)] border p-1"
           >
             {
               LANG_CODES.map((code) => (
                 <a
                   href={withLangPath(code)}
-                  class={`block rounded-[8px] px-3 py-2 text-[13px] ${code === lang ? 'text-accent' : 'text-ink-soft hover:text-ink'}`}
+                  class={`block rounded-[var(--r-sm)] px-3 py-2 text-[13px] ${code === lang ? 'text-accent' : 'text-ink-soft hover:text-ink'}`}
                   aria-label={t('nav').language_option.replace(
                     '{language}',
                     code === 'es' ? 'Español' : 'English'
@@ -84,9 +102,11 @@ const t = useTranslation(lang)
         <button
           class="hamburger"
           id="navHamburger"
-          aria-label="Open menu"
+          aria-label={t('nav').open_menu}
           aria-expanded="false"
           aria-controls="mobileDrawer"
+          data-label-open={t('nav').open_menu}
+          data-label-close={t('nav').close_menu}
         >
           <span></span>
           <span></span>
@@ -101,15 +121,27 @@ const t = useTranslation(lang)
   <nav
     id="mobileDrawer"
     class="mobile-drawer"
-    aria-label="Mobile navigation"
+    aria-label={t('nav').mobile_navigation}
     aria-hidden="true"
     inert
   >
     <div class="drawer-top">
       <span class="drawer-brand">vitualizz</span>
-      <button class="drawer-close" id="drawerClose" aria-label="Close menu">
-        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-          <path d="M4 4l12 12M16 4L4 16"/>
+      <button
+        class="drawer-close"
+        id="drawerClose"
+        aria-label={t('nav').close_menu}
+      >
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 20 20"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+        >
+          <path d="M4 4l12 12M16 4L4 16"></path>
         </svg>
       </button>
     </div>
@@ -121,7 +153,10 @@ const t = useTranslation(lang)
         </a>
       </li>
       <li>
-        <a href={withLangPath(lang, `#${SECTION_IDS.projects}`)} data-mobile-nav>
+        <a
+          href={withLangPath(lang, `#${SECTION_IDS.projects}`)}
+          data-mobile-nav
+        >
           {t('nav').projects}
         </a>
       </li>
@@ -141,11 +176,7 @@ const t = useTranslation(lang)
       <div class="drawer-cv">
         <span class="drawer-cv-label">{t('nav').resume_label}</span>
         <div class="drawer-cv-actions">
-          <button
-            class="drawer-cv-btn"
-            data-drawer-cv-preview
-            data-lang={lang}
-          >
+          <button class="drawer-cv-btn" data-drawer-cv-preview data-lang={lang}>
             {t('resume_actions').preview}
           </button>
           <a
@@ -205,7 +236,32 @@ const t = useTranslation(lang)
     }
   }
 
-  /* Hamburger — hidden on desktop */
+  .palette-hint {
+    display: inline-flex;
+    align-items: center;
+    height: 38px;
+    padding: 0 12px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: color-mix(in oklab, var(--bg-2) 80%, transparent);
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    cursor: pointer;
+    transition:
+      color 0.2s,
+      border-color 0.2s;
+  }
+  .palette-hint:hover {
+    color: var(--ink);
+    border-color: var(--accent);
+  }
+  @media (max-width: 940px), (hover: none) {
+    .palette-hint {
+      display: none;
+    }
+  }
+
   .hamburger {
     display: none;
     flex-direction: column;
@@ -216,10 +272,12 @@ const t = useTranslation(lang)
     padding: 8px;
     background: transparent;
     border: 1px solid var(--line);
-    border-radius: 10px;
+    border-radius: var(--r-sm);
     cursor: pointer;
     color: var(--ink);
-    transition: border-color 0.2s, background 0.2s;
+    transition:
+      border-color 0.2s,
+      background 0.2s;
   }
   .hamburger:hover {
     border-color: var(--accent);
@@ -231,7 +289,9 @@ const t = useTranslation(lang)
     height: 2px;
     background: currentColor;
     border-radius: 2px;
-    transition: transform 0.25s, opacity 0.25s;
+    transition:
+      transform 0.25s,
+      opacity 0.25s;
   }
   .hamburger[aria-expanded='true'] span:nth-child(1) {
     transform: translateY(7px) rotate(45deg);
@@ -244,7 +304,6 @@ const t = useTranslation(lang)
     transform: translateY(-7px) rotate(-45deg);
   }
 
-  /* Overlay */
   .drawer-overlay {
     display: none;
     position: fixed;
@@ -261,7 +320,6 @@ const t = useTranslation(lang)
     backdrop-filter: blur(4px);
   }
 
-  /* Drawer */
   .mobile-drawer {
     position: fixed;
     top: 0;
@@ -289,7 +347,6 @@ const t = useTranslation(lang)
       visibility 0s linear 0s;
   }
 
-  /* Drawer header */
   .drawer-top {
     display: flex;
     align-items: center;
@@ -309,18 +366,19 @@ const t = useTranslation(lang)
     width: 34px;
     height: 34px;
     border: 1px solid var(--line);
-    border-radius: 8px;
+    border-radius: var(--r-sm);
     background: transparent;
     color: var(--ink-soft);
     cursor: pointer;
-    transition: border-color 0.2s, color 0.2s;
+    transition:
+      border-color 0.2s,
+      color 0.2s;
   }
   .drawer-close:hover {
     border-color: var(--accent);
     color: var(--ink);
   }
 
-  /* Drawer links */
   .drawer-links {
     list-style: none;
     padding: 0;
@@ -332,12 +390,14 @@ const t = useTranslation(lang)
   .drawer-links a {
     display: block;
     padding: 11px 14px;
-    border-radius: 10px;
+    border-radius: var(--r-sm);
     font-size: 15px;
     font-weight: 500;
     color: var(--ink-soft);
     text-decoration: none;
-    transition: background 0.15s, color 0.15s;
+    transition:
+      background 0.15s,
+      color 0.15s;
   }
   .drawer-links a:hover,
   .drawer-links a.active {
@@ -348,7 +408,6 @@ const t = useTranslation(lang)
     color: var(--accent);
   }
 
-  /* Drawer footer */
   .drawer-footer {
     margin-top: auto;
     display: flex;
@@ -358,7 +417,6 @@ const t = useTranslation(lang)
     padding-top: 24px;
   }
 
-  /* CV actions */
   .drawer-cv-label {
     display: block;
     font-family: var(--font-mono, monospace);
@@ -379,7 +437,7 @@ const t = useTranslation(lang)
     justify-content: center;
     padding: 10px 8px;
     border: 1px solid var(--line);
-    border-radius: 8px;
+    border-radius: var(--r-sm);
     font-size: 13px;
     font-weight: 600;
     font-family: inherit;
@@ -388,7 +446,10 @@ const t = useTranslation(lang)
     cursor: pointer;
     text-decoration: none;
     text-align: center;
-    transition: border-color 0.2s, color 0.2s, background 0.2s;
+    transition:
+      border-color 0.2s,
+      color 0.2s,
+      background 0.2s;
   }
   .drawer-cv-btn:hover {
     border-color: var(--accent);
@@ -403,8 +464,6 @@ const t = useTranslation(lang)
     background: color-mix(in oklab, var(--accent) 14%, transparent);
   }
 
-
-  /* Mobile breakpoint */
   @media (max-width: 940px) {
     .resume-desktop {
       display: none;
@@ -435,8 +494,11 @@ const t = useTranslation(lang)
 
     private onKeydown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        const hamburger = document.getElementById('navHamburger') as HTMLButtonElement | null
-        if (hamburger?.getAttribute('aria-expanded') === 'true') this.closeDrawer()
+        const hamburger = document.getElementById(
+          'navHamburger'
+        ) as HTMLButtonElement | null
+        if (hamburger?.getAttribute('aria-expanded') === 'true')
+          this.closeDrawer()
       }
     }
 
@@ -451,13 +513,21 @@ const t = useTranslation(lang)
       this.wireDrawer()
       document.addEventListener('keydown', this.onKeydown)
 
-      const sectionLinks = Array.from(this.querySelectorAll<HTMLAnchorElement>('[data-nav]'))
-      const blogNavLink = this.querySelector<HTMLAnchorElement>('[data-nav-blog]')
-      this.navLinks = blogNavLink ? [...sectionLinks, blogNavLink] : sectionLinks
+      const sectionLinks = Array.from(
+        this.querySelectorAll<HTMLAnchorElement>('[data-nav]')
+      )
+      const blogNavLink =
+        this.querySelector<HTMLAnchorElement>('[data-nav-blog]')
+      this.navLinks = blogNavLink
+        ? [...sectionLinks, blogNavLink]
+        : sectionLinks
 
       if (window.location.pathname.includes('/blog')) {
         if (blogNavLink) {
-          sectionLinks.forEach((a) => { a.classList.remove('active'); a.removeAttribute('aria-current') })
+          sectionLinks.forEach((a) => {
+            a.classList.remove('active')
+            a.removeAttribute('aria-current')
+          })
           blogNavLink.classList.add('active')
           blogNavLink.setAttribute('aria-current', 'location')
           this.currentActive = blogNavLink
@@ -468,25 +538,32 @@ const t = useTranslation(lang)
       }
 
       this.sectionMap = sectionLinks
-        .map((a) => ({ a, target: document.querySelector<HTMLElement>(a.hash || '') }))
+        .map((a) => ({
+          a,
+          target: document.querySelector<HTMLElement>(a.hash || '')
+        }))
         .filter((item): item is NavbarItem => item.target !== null)
 
-      // #top (presentation) also maps to the about link
       const aboutLink = sectionLinks.find((a) => a.hash === '#about')
       const topSection = document.querySelector<HTMLElement>('#top')
       if (aboutLink && topSection) {
         this.sectionMap.unshift({ a: aboutLink, target: topSection })
       }
 
-      // #blog section on homepage maps to the blog nav link
       if (blogNavLink) {
         const blogSection = document.querySelector<HTMLElement>('#blog')
-        if (blogSection) this.sectionMap.push({ a: blogNavLink, target: blogSection })
+        if (blogSection)
+          this.sectionMap.push({ a: blogNavLink, target: blogSection })
       }
 
       this.observer = new IntersectionObserver(
         (entries) => {
-          entries.forEach((e) => this.intersecting.set((e.target as HTMLElement).id, e.isIntersecting))
+          entries.forEach((e) =>
+            this.intersecting.set(
+              (e.target as HTMLElement).id,
+              e.isIntersecting
+            )
+          )
           const active = this.sectionMap.find(
             (item) => item.target && this.intersecting.get(item.target.id)
           )
@@ -538,15 +615,27 @@ const t = useTranslation(lang)
       indicator.style.opacity = '1'
 
       if (!animate) {
-        requestAnimationFrame(() => requestAnimationFrame(() => { indicator.style.transition = '' }))
+        requestAnimationFrame(() =>
+          requestAnimationFrame(() => {
+            indicator.style.transition = ''
+          })
+        )
       }
     }
 
     private wireDrawer() {
-      const hamburger = document.getElementById('navHamburger') as HTMLButtonElement | null
-      const drawerOverlay = document.getElementById('drawerOverlay') as HTMLElement | null
-      const mobileDrawer = document.getElementById('mobileDrawer') as HTMLElement | null
-      const drawerClose = document.getElementById('drawerClose') as HTMLButtonElement | null
+      const hamburger = document.getElementById(
+        'navHamburger'
+      ) as HTMLButtonElement | null
+      const drawerOverlay = document.getElementById(
+        'drawerOverlay'
+      ) as HTMLElement | null
+      const mobileDrawer = document.getElementById(
+        'mobileDrawer'
+      ) as HTMLElement | null
+      const drawerClose = document.getElementById(
+        'drawerClose'
+      ) as HTMLButtonElement | null
 
       hamburger?.addEventListener('click', () => {
         const isOpen = hamburger.getAttribute('aria-expanded') === 'true'
@@ -558,22 +647,39 @@ const t = useTranslation(lang)
         link.addEventListener('click', () => this.closeDrawer())
       })
 
-      mobileDrawer?.querySelector('[data-drawer-cv-preview]')?.addEventListener('click', (e) => {
-        const btn = e.currentTarget as HTMLElement
-        window.dispatchEvent(new CustomEvent('resume:preview', {
-          detail: { lang: btn.dataset.lang, sourceId: 'drawer', triggerId: 'drawer-cv-preview' }
-        }))
-        this.closeDrawer()
-      })
+      mobileDrawer
+        ?.querySelector('[data-drawer-cv-preview]')
+        ?.addEventListener('click', (e) => {
+          const btn = e.currentTarget as HTMLElement
+          window.dispatchEvent(
+            new CustomEvent('resume:preview', {
+              detail: {
+                lang: btn.dataset.lang,
+                sourceId: 'drawer',
+                triggerId: 'drawer-cv-preview'
+              }
+            })
+          )
+          this.closeDrawer()
+        })
     }
 
     private openDrawer() {
-      const hamburger = document.getElementById('navHamburger') as HTMLButtonElement | null
-      const drawerOverlay = document.getElementById('drawerOverlay') as HTMLElement | null
-      const mobileDrawer = document.getElementById('mobileDrawer') as HTMLElement | null
+      const hamburger = document.getElementById(
+        'navHamburger'
+      ) as HTMLButtonElement | null
+      const drawerOverlay = document.getElementById(
+        'drawerOverlay'
+      ) as HTMLElement | null
+      const mobileDrawer = document.getElementById(
+        'mobileDrawer'
+      ) as HTMLElement | null
       if (!hamburger || !drawerOverlay || !mobileDrawer) return
       hamburger.setAttribute('aria-expanded', 'true')
-      hamburger.setAttribute('aria-label', 'Close menu')
+      hamburger.setAttribute(
+        'aria-label',
+        hamburger.dataset.labelClose || 'Close menu'
+      )
       drawerOverlay.classList.add('is-open')
       mobileDrawer.classList.add('is-open')
       mobileDrawer.removeAttribute('inert')
@@ -583,12 +689,21 @@ const t = useTranslation(lang)
     }
 
     private closeDrawer() {
-      const hamburger = document.getElementById('navHamburger') as HTMLButtonElement | null
-      const drawerOverlay = document.getElementById('drawerOverlay') as HTMLElement | null
-      const mobileDrawer = document.getElementById('mobileDrawer') as HTMLElement | null
+      const hamburger = document.getElementById(
+        'navHamburger'
+      ) as HTMLButtonElement | null
+      const drawerOverlay = document.getElementById(
+        'drawerOverlay'
+      ) as HTMLElement | null
+      const mobileDrawer = document.getElementById(
+        'mobileDrawer'
+      ) as HTMLElement | null
       if (!hamburger || !drawerOverlay || !mobileDrawer) return
       hamburger.setAttribute('aria-expanded', 'false')
-      hamburger.setAttribute('aria-label', 'Open menu')
+      hamburger.setAttribute(
+        'aria-label',
+        hamburger.dataset.labelOpen || 'Open menu'
+      )
       drawerOverlay.classList.remove('is-open')
       mobileDrawer.classList.remove('is-open')
       mobileDrawer.setAttribute('inert', '')
