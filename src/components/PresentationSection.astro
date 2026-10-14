@@ -160,7 +160,7 @@ const tp = t('presentation')
         </div>
       </div>
 
-      <div class="hero-figure relative">
+      <div class="hero-figure relative" data-hero-3d>
         <span class="blob-tag">{tp.online_tag}</span>
         <img
           class="hero-character relative z-[1] h-full w-full object-contain object-bottom"
@@ -313,6 +313,26 @@ const tp = t('presentation')
   .hero-character {
     filter: drop-shadow(0 30px 40px rgba(0, 0, 0, 0.45));
     animation: floatY 8s ease-in-out infinite;
+    transition: opacity 0.6s ease;
+  }
+  .hero-figure.is-3d .hero-character {
+    opacity: 0;
+    pointer-events: none;
+  }
+  .hero-figure.is-3d {
+    cursor: pointer;
+  }
+  .hero-figure :global(.hero-3d-canvas) {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    width: 100% !important;
+    height: 100% !important;
+    opacity: 0;
+    transition: opacity 0.8s ease;
+  }
+  .hero-figure.is-3d :global(.hero-3d-canvas) {
+    opacity: 1;
   }
 
   .blob-tag {
@@ -401,4 +421,37 @@ const tp = t('presentation')
   }
   initHeroAsk()
   document.addEventListener('astro:page-load', initHeroAsk)
+</script>
+
+<script>
+  import { whenIdle } from 'src/scripts/motion'
+
+  function canRender3D() {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches)
+      return false
+    if (!window.matchMedia('(min-width: 821px)').matches) return false
+    const probe = document.createElement('canvas')
+    return !!(probe.getContext('webgl2') || probe.getContext('webgl'))
+  }
+
+  function initHero3D() {
+    const host = document.querySelector<HTMLElement>('[data-hero-3d]')
+    if (!host || host.dataset.mounted === 'true' || !canRender3D()) return
+    host.dataset.mounted = 'true'
+    whenIdle(async () => {
+      const { mountHeroCharacter } = await import('src/scripts/heroCharacter')
+      const handle = await mountHeroCharacter(host, () =>
+        host.classList.add('is-3d')
+      ).catch(() => null)
+      if (!handle) {
+        host.dataset.mounted = 'false'
+        return
+      }
+      document.addEventListener('astro:before-swap', () => handle.dispose(), {
+        once: true
+      })
+    })
+  }
+  initHero3D()
+  document.addEventListener('astro:page-load', initHero3D)
 </script>

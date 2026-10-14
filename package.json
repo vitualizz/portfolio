@@ -36,13 +36,15 @@
     "mermaid": "^11.15.0",
     "resend": "^4.7.0",
     "sharp": "^0.34.5",
-    "tailwindcss": "^4.1.7"
+    "tailwindcss": "^4.1.7",
+    "three": "^0.186.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.1.1",
     "@tailwindcss/typography": "^0.5.16",
     "@tailwindcss/vite": "^4.1.7",
     "@types/eslint__js": "^8.42.3",
+    "@types/three": "^0.186.0",
     "eslint": "^9.1.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-astro": "^0.34.0",
