@@ -1,0 +1,65 @@
+[tools]
+node = "20"
+"npm:pnpm" = "9.15.9"
+
+[env]
+NODE_ENV = { default = "development" }
+_.path = ["{{config_root}}/node_modules/.bin"]
+
+[tasks.install]
+description = "Install the locked pnpm dependency tree"
+alias = "i"
+run = "pnpm install --frozen-lockfile"
+sources = ["package.json", "pnpm-lock.yaml", "mise.toml"]
+outputs = ["node_modules/.pnpm/lock.yaml"]
+
+[tasks.dev]
+description = "Start the Astro dev server"
+alias = "d"
+run = "pnpm dev"
+depends = ["install"]
+
+[tasks.build]
+description = "Type-check and build the site"
+alias = "b"
+run = "pnpm build"
+depends = ["install"]
+
+[tasks.preview]
+description = "Preview the production build"
+run = "pnpm preview"
+depends = ["install"]
+
+[tasks.typecheck]
+description = "Run astro check"
+run = "pnpm typecheck"
+depends = ["install"]
+
+[tasks.lint]
+description = "Run eslint"
+alias = "l"
+run = "pnpm lint"
+depends = ["install"]
+
+[tasks.format]
+description = "Format the codebase with prettier"
+alias = "f"
+run = "pnpm format"
+depends = ["install"]
+
+[tasks.check]
+description = "Typecheck, lint and verify formatting"
+alias = "c"
+run = "pnpm check"
+depends = ["install"]
+
+[tasks.test]
+description = "Run vitest once"
+alias = "t"
+run = "pnpm test"
+depends = ["install"]
+
+[tasks."blog:cover"]
+description = "Generate a blog cover image (needs .env)"
+run = "pnpm blog:cover"
+depends = ["install"]
