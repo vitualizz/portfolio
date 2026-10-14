@@ -1,10 +1,10 @@
 ---
 import '@fontsource-variable/bricolage-grotesque'
 import '@fontsource-variable/dm-sans'
+import '@fontsource-variable/jetbrains-mono'
 import bricolageUrl from '@fontsource-variable/bricolage-grotesque/files/bricolage-grotesque-latin-wght-normal.woff2?url'
 import dmSansUrl from '@fontsource-variable/dm-sans/files/dm-sans-latin-wght-normal.woff2?url'
 import '../styles/global.css'
-import GlobalSpotlight from 'src/components/GlobalSpotlight.astro'
 import { getLangFromUrl, useTranslation } from 'src/i18n/utils'
 import { ClientRouter } from 'astro:transitions'
 
@@ -38,9 +38,19 @@ const twitterImage = ogImageProp
       function applyTheme() {
         const stored = localStorage.getItem('portfolio-theme')
         if (stored) document.documentElement.setAttribute('data-theme', stored)
+        const accent = localStorage.getItem('portfolio-accent')
+        if (accent && accent !== 'yellow')
+          document.documentElement.setAttribute('data-accent', accent)
       }
       applyTheme()
       document.addEventListener('astro:after-swap', applyTheme)
+      window.addEventListener('accent:set', (e) => {
+        const accent = String(e.detail || 'yellow')
+        if (accent === 'yellow')
+          document.documentElement.removeAttribute('data-accent')
+        else document.documentElement.setAttribute('data-accent', accent)
+        localStorage.setItem('portfolio-accent', accent)
+      })
     </script>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -48,7 +58,6 @@ const twitterImage = ogImageProp
     <meta name="description" content={pageDescription} />
     <meta name="robots" content="index, follow" />
     <link rel="canonical" href={canonicalUrl} />
-    <!-- Open Graph -->
     <meta property="og:title" content={pageTitle} />
     <meta property="og:description" content={pageDescription} />
     <meta property="og:image" content={ogImage} />
@@ -59,7 +68,6 @@ const twitterImage = ogImageProp
     <meta property="og:url" content={canonicalUrl} />
     <meta property="og:locale" content={ogLocale} />
     <meta property="og:site_name" content="Lee Palacios" />
-    <!-- Twitter / X -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:site" content="@vitualizz" />
     <meta name="twitter:title" content={pageTitle} />
@@ -89,26 +97,82 @@ const twitterImage = ogImageProp
     <div class="stars"></div>
     <div class="stars2"></div>
     <div class="stars3"></div>
-    <GlobalSpotlight />
     <div class="relative z-[1]">
       <slot />
     </div>
     <script>
+      const reduced = () =>
+        window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+      function spawn(cls: string, inner: string, delay?: string) {
+        const el = document.createElement('div')
+        el.className = cls
+        el.setAttribute('aria-hidden', 'true')
+        el.innerHTML = inner
+        document.body.appendChild(el)
+        if (delay) el.style.animationDelay = delay
+        return el
+      }
+
+      function makeClickable(cat: HTMLElement) {
+        cat.style.pointerEvents = 'auto'
+        cat.setAttribute('role', 'button')
+        cat.setAttribute('aria-label', 'miau')
+        cat.addEventListener('click', () => {
+          if (cat.classList.contains('is-meowing')) return
+          cat.classList.add('is-meowing')
+          const bubble = document.createElement('span')
+          bubble.className = 'cat-bubble'
+          bubble.textContent = Math.random() < 0.5 ? 'miau' : 'prrr'
+          cat.appendChild(bubble)
+          window.setTimeout(() => {
+            bubble.remove()
+            cat.classList.remove('is-meowing')
+          }, 1400)
+        })
+      }
+
+      function stampede() {
+        if (reduced()) return
+        const emojis = ['🐈', '🐈‍⬛', '🐈', '🐈‍⬛', '🐈']
+        emojis.forEach((e, i) => {
+          const el = spawn(
+            'walking-cat walking-cat--guest',
+            `<span class="cat-emoji">${e}</span>`
+          )
+          el.style.bottom = `${18 + i * 26}px`
+          el.style.animationDuration = `${9 + i * 1.3}s`
+          el.style.animationDelay = `${i * 0.35}s`
+          window.setTimeout(() => el.remove(), 12000 + i * 1300)
+        })
+      }
+
       function spawnCats() {
         if (document.querySelector('.walking-cat')) return
-        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches)
-          return
-        function spawn(cls: string, inner: string, delay?: string) {
-          const el = document.createElement('div')
-          el.className = cls
-          el.setAttribute('aria-hidden', 'true')
-          el.innerHTML = inner
-          document.body.appendChild(el)
-          if (delay) el.style.animationDelay = delay
-        }
-        spawn('walking-cat', '<span class="cat-emoji">🐈</span>')
+        if (reduced()) return
+        makeClickable(spawn('walking-cat', '<span class="cat-emoji">🐈</span>'))
         spawn('peeking-cat', '🐱', '-6s')
       }
+
+      let typed = ''
+      document.addEventListener('keydown', (e) => {
+        const t = e.target as HTMLElement | null
+        if (
+          t &&
+          (t.tagName === 'INPUT' ||
+            t.tagName === 'TEXTAREA' ||
+            t.isContentEditable)
+        )
+          return
+        if (e.key.length !== 1) return
+        typed = (typed + e.key.toLowerCase()).slice(-4)
+        if (typed === 'meow' || typed === 'miau') {
+          typed = ''
+          stampede()
+        }
+      })
+      window.addEventListener('cats:meow', stampede)
+
       spawnCats()
       document.addEventListener('astro:after-swap', spawnCats)
     </script>

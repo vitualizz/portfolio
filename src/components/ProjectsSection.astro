@@ -3,7 +3,6 @@ import projects from 'src/data/projects.json'
 import Icon from 'src/components/Icon.astro'
 import { useTranslation } from 'src/i18n/utils'
 import type { IconType } from 'src/types/Icons.types.ts'
-import { safeI18nHtml } from 'src/components/shared/i18nRichText'
 
 interface Props {
   lang: 'es' | 'en'
@@ -11,12 +10,30 @@ interface Props {
 
 const { lang } = Astro.props
 const t = useTranslation(lang)
+const tp = t('projects')
 
 const ICON_LIST = [
-  'javascript', 'ruby', 'typescript', 'python', 'sql',
-  'rails', 'react', 'tailwind', 'astro', 'vue', 'node',
-  'postgres', 'aws', 'selenium', 'git', 'docker',
-  'elasticsearch', 'lambda', 'dynamodb', 'redux', 'gpt'
+  'javascript',
+  'ruby',
+  'typescript',
+  'python',
+  'sql',
+  'rails',
+  'react',
+  'tailwind',
+  'astro',
+  'vue',
+  'node',
+  'postgres',
+  'aws',
+  'selenium',
+  'git',
+  'docker',
+  'elasticsearch',
+  'lambda',
+  'dynamodb',
+  'redux',
+  'gpt'
 ] as const satisfies readonly IconType[]
 
 const VALID_ICONS = new Set<string>(ICON_LIST)
@@ -26,68 +43,120 @@ const VALID_ICONS = new Set<string>(ICON_LIST)
   <section class="s" id="projects">
     <div class="wrap">
       <div class="s-head reveal">
-        <span class="s-eyebrow">{t('home').projects_eyebrow}</span>
-        <h2 class="s-title" set:html={safeI18nHtml(t('home').projects_title)} />
+        <h2 class="s-title">{t('home').projects_title}</h2>
         <p class="s-sub">{t('home').projects_subtitle}</p>
       </div>
 
       <div class="projects grid grid-cols-2 gap-6 max-[720px]:grid-cols-1">
         {
-          projects.map((project) => {
+          projects.map((project, i) => {
             const href = project.demo ?? project.githubUrl ?? '#'
             const description =
               lang === 'es' ? project.description_es : project.description_en
+            const featured = i === 0
+            const askQuestion = tp.ask_about_question.replace(
+              '{title}',
+              project.title
+            )
             return (
-              <a
-                class="project bg-bg-2 border-line text-ink reveal relative flex flex-col overflow-hidden rounded-[20px] border transition-[transform,border-color,box-shadow] duration-300 ease-[ease] [will-change:transform] [transform-style:preserve-3d]"
-                href={href}
-                target="_blank"
-                rel="noopener noreferrer"
+              <article
+                class:list={[
+                  'project bg-bg-2 border-line text-ink relative flex flex-col overflow-hidden rounded-[var(--r-lg)] border transition-[transform,border-color,box-shadow] duration-300 ease-[ease]',
+                  featured && 'project--featured'
+                ]}
               >
                 <span class="project-glow" aria-hidden="true" />
-                <div class="project-img bg-bg-3 relative aspect-[16/10] overflow-hidden">
+                <a
+                  class="project-img bg-bg-3 relative block aspect-[16/10] overflow-hidden"
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  tabindex="-1"
+                  aria-hidden="true"
+                >
                   <img
                     src={`/img/projects/${project.image}.webp`}
-                    alt={project.title}
-                    loading="lazy"
+                    alt=""
+                    loading={featured ? 'eager' : 'lazy'}
                     class="h-full w-full object-cover transition-transform duration-[600ms] ease-[ease]"
                   />
-                </div>
-                <div class="project-body relative flex flex-1 flex-col px-6 pt-6 pb-[26px]">
-                  <div class="mb-2 flex items-baseline justify-between gap-3">
-                    <h3 class="text-[22px] font-bold tracking-[-0.02em]">
+                </a>
+                <div class="project-body relative flex flex-1 flex-col px-6 pt-6 pb-[22px]">
+                  <h3
+                    class:list={[
+                      'mb-2 font-bold tracking-[-0.02em]',
+                      featured ? 'text-[clamp(26px,3vw,36px)]' : 'text-[22px]'
+                    ]}
+                  >
+                    <a
+                      href={href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="project-title-link"
+                    >
                       {project.title}
-                    </h3>
-                  </div>
-                  <p class="text-muted-custom mb-[18px] flex-1 text-[14.5px] leading-[1.6]">
+                    </a>
+                  </h3>
+                  <p
+                    class:list={[
+                      'text-muted-custom mb-[18px] flex-1 leading-[1.6]',
+                      featured ? 'max-w-[52ch] text-[16px]' : 'text-[14.5px]'
+                    ]}
+                  >
                     {description}
                   </p>
-                  <div class="project-foot flex items-center justify-between gap-3">
+                  <div class="project-foot flex flex-wrap items-center justify-between gap-3">
                     <div class="flex flex-wrap items-center gap-[5px]">
                       {project.stack.map((s) =>
                         VALID_ICONS.has(s.icon) ? (
                           <span
                             title={s.tooltip}
-                            class="inline-flex items-center"
+                            class="stack-icon inline-flex h-6 w-6 items-center justify-center"
                           >
                             <Icon name={s.icon as IconType} />
+                            <span class="sr-only">{s.tooltip}</span>
                           </span>
                         ) : (
-                          <span class="stack-text text-ink-soft border-line rounded-full border bg-[color-mix(in_oklab,var(--bg)_70%,transparent)] px-2 py-[3px] font-mono text-[10.5px]">
+                          <span class="stack-text text-ink-soft border-line rounded-full border bg-[color-mix(in_oklab,var(--bg)_70%,transparent)] px-2 py-[3px] text-[11.5px] font-medium">
                             {s.tooltip}
                           </span>
                         )
                       )}
                     </div>
-                    <span class="project-link text-accent inline-flex items-center gap-[6px] font-mono text-[12px] whitespace-nowrap">
-                      {t('projects').live_preview}{' '}
-                      <span class="arrow transition-transform duration-200">
-                        ↗
-                      </span>
-                    </span>
+                    <div class="project-actions flex items-center gap-2">
+                      <button
+                        type="button"
+                        class="project-ask"
+                        data-ask-project={askQuestion}
+                      >
+                        <svg
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          aria-hidden="true"
+                        >
+                          <path d="M12 2 L13.5 8.5 L20 10 L13.5 11.5 L12 18 L10.5 11.5 L4 10 L10.5 8.5 Z" />
+                        </svg>
+                        {tp.ask_about}
+                      </button>
+                      <a
+                        class="project-link text-accent inline-flex items-center gap-[6px] text-[13px] font-semibold whitespace-nowrap"
+                        href={href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        {tp.live_preview}
+                        <span class="arrow transition-transform duration-200">
+                          ↗
+                        </span>
+                      </a>
+                    </div>
                   </div>
                 </div>
-              </a>
+              </article>
             )
           })
         }
@@ -97,10 +166,42 @@ const VALID_ICONS = new Set<string>(ICON_LIST)
 </projects-section>
 
 <style>
-  .project:hover {
-    transform: translateY(-6px);
+  .stack-icon :global(svg) {
+    width: 100%;
+    height: 100%;
+  }
+  .project--featured {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+  }
+  .project--featured .project-img {
+    aspect-ratio: auto;
+    min-height: 320px;
+    height: 100%;
+  }
+  .project--featured .project-body {
+    padding: clamp(24px, 3vw, 40px);
+    justify-content: center;
+  }
+  @media (max-width: 720px) {
+    .project--featured {
+      display: flex;
+    }
+    .project--featured .project-img {
+      aspect-ratio: 16 / 10;
+      min-height: 0;
+      height: auto;
+    }
+  }
+  .project:hover,
+  .project:focus-within {
+    transform: translateY(-4px);
     border-color: color-mix(in oklab, var(--accent) 40%, var(--line));
     box-shadow: 0 24px 50px rgba(0, 0, 0, 0.3);
+  }
+  .project-title-link:hover {
+    color: var(--accent);
   }
   .project-glow {
     position: absolute;
@@ -132,12 +233,42 @@ const VALID_ICONS = new Set<string>(ICON_LIST)
       rgba(11, 12, 16, 0.55),
       transparent 40%
     );
+    pointer-events: none;
   }
   .project:hover .project-img img {
     transform: scale(1.04);
   }
-  .project:hover .project-link .arrow {
+  .project-link:hover .arrow {
     transform: translate(3px, -3px);
+  }
+  .project-ask {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 32px;
+    padding: 0 12px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: transparent;
+    color: var(--ink-soft);
+    font: inherit;
+    font-size: 12.5px;
+    font-weight: 500;
+    cursor: pointer;
+    transition:
+      color 0.2s,
+      border-color 0.2s,
+      background 0.2s;
+  }
+  .project-ask svg {
+    width: 14px;
+    height: 14px;
+    color: var(--accent);
+  }
+  .project-ask:hover {
+    color: var(--ink);
+    border-color: var(--accent);
+    background: color-mix(in oklab, var(--accent) 10%, transparent);
   }
 </style>
 
@@ -157,35 +288,30 @@ const VALID_ICONS = new Set<string>(ICON_LIST)
     }
 
     private bindCards() {
-      const motionDisabled =
-        window.matchMedia('(prefers-reduced-motion: reduce)').matches ||
-        window.matchMedia('(hover: none)').matches
-
       this.querySelectorAll<HTMLElement>('.project').forEach((card) => {
         const glow = card.querySelector<HTMLElement>('.project-glow')
         this.cleanupCallbacks.push(
           glow ? initPointerGlow(card, glow) : () => {}
         )
-        if (motionDisabled) return
-
-        const onPointerMove = (event: PointerEvent) => {
-          const r = card.getBoundingClientRect()
-          const x = (event.clientX - r.left) / r.width - 0.5
-          const y = (event.clientY - r.top) / r.height - 0.5
-          card.style.transform = `translateY(-6px) rotateX(${(-y * 4).toFixed(2)}deg) rotateY(${(x * 6).toFixed(2)}deg)`
-        }
-        const onPointerLeave = () => {
-          card.style.transform = ''
-        }
-
-        card.addEventListener('pointermove', onPointerMove, { passive: true })
-        card.addEventListener('pointerleave', onPointerLeave, { passive: true })
-        this.cleanupCallbacks.push(() => {
-          card.removeEventListener('pointermove', onPointerMove)
-          card.removeEventListener('pointerleave', onPointerLeave)
-          card.style.transform = ''
-        })
       })
+      this.querySelectorAll<HTMLButtonElement>('[data-ask-project]').forEach(
+        (btn) => {
+          const onClick = () => {
+            window.dispatchEvent(
+              new CustomEvent('ask-lee:ask', {
+                detail: { question: btn.dataset.askProject }
+              })
+            )
+            document
+              .getElementById('ai')
+              ?.scrollIntoView({ behavior: 'smooth' })
+          }
+          btn.addEventListener('click', onClick)
+          this.cleanupCallbacks.push(() =>
+            btn.removeEventListener('click', onClick)
+          )
+        }
+      )
     }
 
     private cleanup() {

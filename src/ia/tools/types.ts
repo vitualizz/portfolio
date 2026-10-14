@@ -20,7 +20,6 @@ export type ProjectEntry = {
 }
 
 export type SkillItem = { label: string; variant?: string }
-// SkillGroup uses 'label' to match the actual data shape in src/data/skills.ts
 export type SkillGroup = { label: string; items: SkillItem[] }
 
 export type BlogMeta = {

@@ -113,7 +113,6 @@ describe('askLeeOrchestrator', () => {
     })
     const req = { messages: [{ role: 'user' as const, content: 'career?' }] }
     await askLeeOrchestrator(req)
-    // streamAskAnswer should be called exactly once (direct stream, no synthesis)
     expect(mockStream).toHaveBeenCalledOnce()
   })
 })

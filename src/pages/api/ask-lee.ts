@@ -17,14 +17,24 @@ export const POST: APIRoute = async ({ request }) => {
   ) as { role: 'user' | 'assistant'; content: string }[]
   const lang = ((body as { lang?: string }).lang ?? 'es') as Lang
 
-  const { result, meta } = await askLeeOrchestrator({ messages, lang })
-
   const encoder = new TextEncoder()
   const sse = (o: unknown) => encoder.encode(`data: ${JSON.stringify(o)}\n\n`)
 
   const stream = new ReadableStream({
     async start(controller) {
       try {
+        const { result, meta } = await askLeeOrchestrator({
+          messages,
+          lang,
+          onRoute: (decision) =>
+            controller.enqueue(
+              sse({
+                type: 'route',
+                mode: decision.mode,
+                agents: decision.toolKeys
+              })
+            )
+        })
         for await (const delta of result.textStream) {
           controller.enqueue(sse({ type: 'chunk', content: delta }))
         }
@@ -32,8 +42,8 @@ export const POST: APIRoute = async ({ request }) => {
           sse({
             type: 'done',
             sources: meta.sources,
-            confidence: meta.confidence,
-            toolsUsed: meta.toolsUsed
+            agents: meta.toolsUsed,
+            confidence: meta.confidence
           })
         )
       } catch {

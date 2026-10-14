@@ -2,6 +2,7 @@
 import BaseLayout from './BaseLayout.astro'
 import Navbar from '@components/Navbar.astro'
 import Footer from 'src/components/Footer.astro'
+import CommandPalette from 'src/components/CommandPalette.astro'
 import { useTranslation } from 'src/i18n/utils'
 
 interface Props {
@@ -15,6 +16,7 @@ const t = useTranslation(lang)
   <Navbar />
   <slot />
   <Footer lang={lang} />
+  <CommandPalette lang={lang} />
 </BaseLayout>
 
 <script>
