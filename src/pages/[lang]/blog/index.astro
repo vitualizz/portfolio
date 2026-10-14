@@ -40,64 +40,21 @@ function getReadingTime(body: string): number {
   <main
     class="mx-auto max-w-[var(--max)] px-[var(--gutter)] py-[clamp(40px,6vw,80px)]"
   >
-    <!-- ===== HERO ===== -->
     <section class="blog-hero">
       <div>
-        <!-- Title -->
         <h1
           class="font-display mb-[18px] text-[clamp(42px,7vw,84px)] leading-none font-extrabold tracking-[-0.035em] text-balance"
         >
-          <span set:html={tBlog.index_title} /><span
-            class="bh-cat-emoji"
-            aria-hidden="true">🐱</span
-          >
+          {tBlog.index_title}
         </h1>
 
-        <!-- Subtitle -->
         <p
-          class="text-ink-soft mb-6 max-w-[56ch] text-[clamp(16px,1.4vw,18px)] leading-[1.65]"
+          class="text-ink-soft max-w-[56ch] text-[clamp(16px,1.4vw,18px)] leading-[1.65]"
         >
           {tBlog.index_subtitle}
         </p>
-
-        <!-- Stats -->
-        <div
-          class="border-line inline-flex overflow-hidden rounded-[var(--r-md)] border bg-[color-mix(in_oklab,var(--bg-2)_80%,transparent)]"
-        >
-          <div class="border-line border-r px-[22px] py-3.5 text-center">
-            <span
-              class="font-display text-accent block text-[26px] leading-none font-bold"
-              >{posts.length}</span
-            >
-            <span
-              class="text-muted-custom mt-[5px] block text-[12.5px] font-medium"
-              >{tBlog.index_stat_posts}</span
-            >
-          </div>
-          <div class="border-line border-r px-[22px] py-3.5 text-center">
-            <span
-              class="font-display text-accent block text-[26px] leading-none font-bold"
-              >{uniquePrimaryTags.length}</span
-            >
-            <span
-              class="text-muted-custom mt-[5px] block text-[12.5px] font-medium"
-              >{tBlog.index_stat_topics}</span
-            >
-          </div>
-          <div class="px-[22px] py-3.5 text-center">
-            <span
-              class="font-display text-accent block text-[26px] leading-none font-bold"
-              >3</span
-            >
-            <span
-              class="text-muted-custom mt-[5px] block text-[12.5px] font-medium"
-              >{tBlog.index_stat_cats}</span
-            >
-          </div>
-        </div>
       </div>
 
-      <!-- Cat island art -->
       <div class="bh-art" aria-hidden="true">
         <div class="bh-island">🐈‍⬛</div>
         <span class="bh-paw bh-paw-1">🐾</span>
@@ -112,7 +69,6 @@ function getReadingTime(body: string): number {
       </div>
     </section>
 
-    <!-- ===== FILTER BAR ===== -->
     <div
       id="blogFilter"
       class="border-line sticky top-[84px] z-20 mb-7 flex flex-wrap items-center gap-2.5 rounded-2xl border bg-[color-mix(in_oklab,var(--bg-2)_80%,transparent)] px-[22px] py-[18px] backdrop-blur-xl"
@@ -127,16 +83,14 @@ function getReadingTime(body: string): number {
         aria-pressed="true"
       >
         {tBlog.filter_all}
-        <span class="font-mono text-[10.5px] opacity-65">{posts.length}</span>
+        <span class="bf-count">{posts.length}</span>
       </button>
 
       {
         uniquePrimaryTags.map((tag) => (
           <button class="bf-chip" data-filter={tag} aria-pressed="false">
             {formatTag(tag)}
-            <span class="font-mono text-[10.5px] opacity-65">
-              {primaryTagCounts[tag]}
-            </span>
+            <span class="bf-count">{primaryTagCounts[tag]}</span>
           </button>
         ))
       }
@@ -168,7 +122,6 @@ function getReadingTime(body: string): number {
       </label>
     </div>
 
-    <!-- ===== POSTS GRID ===== -->
     <div
       id="postsGrid"
       class="grid grid-cols-1 gap-5 min-[640px]:grid-cols-2 min-[1080px]:grid-cols-3"
@@ -191,13 +144,14 @@ function getReadingTime(body: string): number {
                 'bp-card',
                 isFeatured && 'bp-featured min-[640px]:col-span-2'
               ]}
+              data-tag={tag}
               data-tags={post.data.tags.join(',')}
               data-title={post.data.title.toLowerCase()}
               data-excerpt={(post.data.shortDescription || '').toLowerCase()}
             >
               <div class:list={['bp-cover', isFeatured && 'bp-cover-featured']}>
                 {isFeatured && (
-                  <span class="bp-pin">⌘ {tBlog.featured_label}</span>
+                  <span class="bp-pin">{tBlog.featured_label}</span>
                 )}
                 {post.data.cover && (
                   <Image
@@ -249,7 +203,6 @@ function getReadingTime(body: string): number {
         })
       }
 
-      <!-- Empty state -->
       <div
         id="emptyState"
         class="border-line col-span-full hidden rounded-[var(--r-lg)] border border-dashed bg-[color-mix(in_oklab,var(--bg-2)_60%,transparent)] px-6 py-[60px] text-center"
@@ -264,20 +217,16 @@ function getReadingTime(body: string): number {
       </div>
     </div>
 
-    <!-- ===== CLOSING SECTION ===== -->
-    <section
-      class="blog-closer relative mt-[clamp(56px,8vw,88px)] overflow-hidden rounded-[var(--r-lg)] border border-[color-mix(in_oklab,var(--accent)_30%,var(--line))] p-[clamp(36px,5vw,60px)] text-center"
-    >
+    <section class="blog-closer">
       <h2
-        class="font-display relative mb-3.5 text-[clamp(28px,4vw,40px)] leading-[1.05] font-bold tracking-[-0.03em] text-balance"
-        set:html={tBlog.closer_title}
-      />
-      <p
-        class="text-ink-soft relative mx-auto mb-7 max-w-[56ch] text-[16px] leading-[1.65]"
+        class="font-display mb-3.5 text-[clamp(28px,4vw,40px)] leading-[1.05] font-bold tracking-[-0.03em] text-balance"
       >
+        {tBlog.closer_title}
+      </h2>
+      <p class="text-ink-soft mb-7 max-w-[56ch] text-[16px] leading-[1.65]">
         {tBlog.closer_text}
       </p>
-      <div class="relative inline-flex flex-wrap justify-center gap-3">
+      <div class="flex flex-wrap gap-3">
         <a
           href="https://github.com/vitualizz"
           target="_blank"
@@ -295,7 +244,6 @@ function getReadingTime(body: string): number {
       </div>
     </section>
 
-    <!-- ===== MASCOT ROW ===== -->
     <div
       class="text-muted-custom mt-10 mb-8 flex items-center justify-center gap-4 text-[13px]"
     >
@@ -309,7 +257,6 @@ function getReadingTime(body: string): number {
 </HomeLayout>
 
 <style>
-  /* ===== BLOG HERO ===== */
   .blog-hero {
     display: grid;
     grid-template-columns: 1.4fr 1fr;
@@ -324,14 +271,6 @@ function getReadingTime(body: string): number {
     }
   }
 
-  /* Cat emoji tilt */
-  .bh-cat-emoji {
-    display: inline-block;
-    font-size: 0.7em;
-    margin-left: 8px;
-    animation: bh-cat-tilt 4s ease-in-out infinite;
-    transform-origin: bottom center;
-  }
   @keyframes bh-cat-tilt {
     0%,
     100% {
@@ -342,7 +281,6 @@ function getReadingTime(body: string): number {
     }
   }
 
-  /* Cat island */
   .bh-art {
     position: relative;
     aspect-ratio: 1 / 1;
@@ -460,7 +398,6 @@ function getReadingTime(body: string): number {
     }
   }
 
-  /* ===== FILTER BAR ===== */
   .bf-search-label:focus-within {
     border-color: var(--accent);
   }
@@ -495,7 +432,6 @@ function getReadingTime(body: string): number {
     font-weight: 600;
   }
 
-  /* ===== BLOG CARDS ===== */
   .bp-card {
     background: var(--bg-2);
     border: 1px solid var(--line);
@@ -533,7 +469,6 @@ function getReadingTime(body: string): number {
     transform: scaleX(1);
   }
 
-  /* Featured card */
   .bp-featured {
     background: linear-gradient(
       160deg,
@@ -549,7 +484,6 @@ function getReadingTime(body: string): number {
     }
   }
 
-  /* Cover */
   .bp-cover {
     position: relative;
     aspect-ratio: 16 / 9;
@@ -577,7 +511,6 @@ function getReadingTime(body: string): number {
     z-index: 1;
   }
 
-  /* Featured cover */
   .bp-cover-featured {
     aspect-ratio: unset;
     height: 100%;
@@ -591,29 +524,19 @@ function getReadingTime(body: string): number {
     }
   }
 
-  /* Pin badge */
   .bp-pin {
     position: absolute;
     top: 12px;
     left: 12px;
     z-index: 2;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 5px 10px;
-    background: color-mix(in oklab, var(--bg) 80%, transparent);
-    backdrop-filter: blur(6px);
-    border: 1px solid color-mix(in oklab, var(--accent) 30%, var(--line));
+    padding: 5px 11px;
+    background: var(--accent);
+    color: #0b0c10;
     border-radius: 999px;
-    font-family: var(--font-mono);
-    font-size: 10.5px;
-    color: var(--accent);
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
+    font-size: 12px;
     font-weight: 600;
   }
 
-  /* Meta separator dot */
   .bp-dot {
     width: 3px;
     height: 3px;
@@ -623,38 +546,24 @@ function getReadingTime(body: string): number {
     display: inline-block;
   }
 
-  /* Empty state cat */
   .e-cat {
     animation: bh-cat-tilt 3s ease-in-out infinite;
     transform-origin: bottom center;
     display: inline-block;
   }
 
-  /* ===== CLOSING SECTION ===== */
   .blog-closer {
-    background: linear-gradient(
-      135deg,
-      color-mix(in oklab, var(--accent) 12%, var(--bg-2)),
-      var(--bg-2) 60%
-    );
+    max-width: 880px;
+    margin: clamp(56px, 8vw, 88px) auto 0;
+    padding-top: clamp(32px, 5vw, 48px);
+    border-top: 1px solid var(--line);
   }
-  .blog-closer::before {
-    content: '';
-    position: absolute;
-    top: -120px;
-    right: -80px;
-    width: 360px;
-    height: 360px;
-    background: var(--accent);
-    border-radius: 50%;
-    filter: blur(120px);
-    opacity: 0.2;
-    pointer-events: none;
+  .bf-count {
+    font-size: 11.5px;
+    opacity: 0.65;
   }
 
-  /* Reduced motion */
   @media (prefers-reduced-motion: reduce) {
-    .bh-cat-emoji,
     .bh-island,
     .bh-scrap-1,
     .bh-scrap-2,
@@ -675,6 +584,8 @@ function getReadingTime(body: string): number {
 </style>
 
 <script>
+  import { loadMotion } from 'src/scripts/motion'
+
   const grid = document.getElementById('postsGrid')
   const emptyState = document.getElementById('emptyState')
   const chips = document.querySelectorAll<HTMLButtonElement>('.bf-chip')
@@ -685,10 +596,14 @@ function getReadingTime(body: string): number {
   let currentFilter = 'all'
   let currentSearch = ''
 
+  let motion: Awaited<ReturnType<typeof loadMotion>> = null
+  loadMotion().then((m) => (motion = m))
+
   function filterPosts() {
     if (!grid) return
     const q = currentSearch.trim().toLowerCase()
     const cards = grid.querySelectorAll<HTMLElement>('.bp-card')
+    const before = motion ? motion.Flip.getState(cards) : null
     let visibleCount = 0
 
     cards.forEach((card) => {
@@ -696,7 +611,8 @@ function getReadingTime(body: string): number {
       const title = card.dataset.title ?? ''
       const excerpt = card.dataset.excerpt ?? ''
 
-      const matchTag = currentFilter === 'all' || tags.includes(currentFilter)
+      const matchTag =
+        currentFilter === 'all' || card.dataset.tag === currentFilter
       const matchSearch =
         !q ||
         title.includes(q) ||
@@ -714,6 +630,22 @@ function getReadingTime(body: string): number {
       } else {
         emptyState.classList.remove('hidden')
       }
+    }
+    if (before && motion) {
+      motion.Flip.from(before, {
+        targets: cards,
+        duration: 0.35,
+        ease: 'power2.out',
+        absolute: true,
+        onEnter: (els) =>
+          motion!.gsap.fromTo(
+            els,
+            { opacity: 0, scale: 0.96 },
+            { opacity: 1, scale: 1, duration: 0.3 }
+          ),
+        onLeave: (els) =>
+          motion!.gsap.to(els, { opacity: 0, scale: 0.96, duration: 0.2 })
+      })
     }
   }
 

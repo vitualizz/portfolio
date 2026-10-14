@@ -135,15 +135,11 @@ const locale: LanguageLocale = {
     index_title: 'Notas del campo de batalla',
     index_subtitle:
       'Lo que voy aprendiendo construyendo backends, agentes y SaaS en producción. Sin hype, sin "10 razones por las que…" — solo código, decisiones y a veces los tres gatos opinando al lado.',
-    index_stat_posts: 'Posts',
-    index_stat_topics: 'Tópicos',
-    index_stat_cats: 'Gatos',
     filter_label: 'Filtrar',
     filter_all: 'Todo',
     filter_search_placeholder: 'Buscar entre los posts...',
     featured_label: 'Último post',
-    closer_title:
-      "¿Quieres recibir los nuevos posts <span class='text-accent'>antes que nadie</span>?",
+    closer_title: '¿Quieres recibir los nuevos posts antes que nadie?',
     closer_text:
       'Por ahora no tengo newsletter — pero puedes seguirme en GitHub o LinkedIn, y si te gustó algo, escríbeme. Respondo a todo lo que llega.',
     closer_github: 'Seguirme en GitHub',
@@ -163,7 +159,26 @@ const locale: LanguageLocale = {
     more_posts_title: 'Otras cosas que escribí',
     share_prompt: '¿Te sirvió?',
     share_cta: 'Compartir',
-    contact_cta: 'Escríbeme'
+    contact_cta: 'Escríbeme',
+    toc_title: 'En este post',
+    ai_title: 'Pregúntale a Lee IA sobre este post',
+    ai_intro:
+      'Un asistente que leyó este post y responde como si fuera yo. Haz preguntas técnicas o pide un resumen.',
+    ai_placeholder: 'Pregunta sobre el post…',
+    ai_send: 'Enviar',
+    ai_user: 'TÚ',
+    ai_error: 'Algo se cayó. Intenta de nuevo.',
+    ai_empty: 'No pude generar una respuesta.',
+    ai_open: 'Preguntar a la IA',
+    ai_close: 'Cerrar',
+    ai_ask_selection: 'Preguntar sobre esto',
+    ai_selection_prompt: 'Explícame esta parte del post: «{text}»',
+    ai_suggestions: [
+      'Resúmeme el post en 3 líneas',
+      '¿Cuál es el punto más importante?',
+      '¿Cómo aplicar esto en producción?'
+    ],
+    author_line: 'Senior Fullstack Engineer y AI Builder. Lima.'
   },
   ai: {
     greeting:

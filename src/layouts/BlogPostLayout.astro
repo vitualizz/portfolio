@@ -18,7 +18,14 @@ interface MorePost extends NavPost {
   readingTime: number
 }
 
+interface Heading {
+  depth: number
+  slug: string
+  text: string
+}
+
 interface Props {
+  headings?: Heading[]
   title: string
   shortDescription: string
   author: string
@@ -43,7 +50,8 @@ const {
   cover,
   prevPost,
   nextPost,
-  morePosts = []
+  morePosts = [],
+  headings = []
 } = Astro.props
 
 const t = useTranslation(lang)
@@ -62,23 +70,9 @@ const authorInitial = author.charAt(0).toUpperCase()
 const shareUrl = encodeURIComponent(Astro.url.toString())
 const shareText = encodeURIComponent(`${title} — por @vitualizz`)
 const twitterUrl = `https://twitter.com/intent/tweet?text=${shareText}&url=${shareUrl}`
-
-const suggestions =
-  lang === 'es'
-    ? [
-        'Resúmeme el post en 3 líneas',
-        '¿Cuál es el punto más importante?',
-        '¿Cómo aplicar esto en producción?'
-      ]
-    : [
-        'Summarize in 3 lines',
-        "What's the most important point?",
-        'How to apply this in production?'
-      ]
 ---
 
 <BaseLayout title={`Lee Palacios - ${title}`} description={shortDescription}>
-  <!-- Reading progress bar -->
   <div
     id="read-progress"
     aria-hidden="true"
@@ -93,7 +87,6 @@ const suggestions =
       class="grid grid-cols-1 items-start justify-center gap-x-[clamp(32px,4vw,64px)] py-[clamp(36px,6vw,80px)] pb-[clamp(32px,5vw,64px)] min-[1080px]:grid-cols-[minmax(0,720px)_320px]"
     >
       <article class="blog-article max-w-[720px] min-w-0">
-        <!-- Back link -->
         <a
           href={`/${lang}/blog`}
           class="text-muted-custom hover:text-accent mb-8 inline-block text-[13.5px] font-medium transition-colors"
@@ -101,7 +94,6 @@ const suggestions =
           {tBlog.back_to_blog}
         </a>
 
-        <!-- Cover image -->
         {
           cover && (
             <figure class="article-cover border-line bg-bg-2 relative mb-7 aspect-[1200/630] overflow-hidden rounded-[var(--r-lg)] border shadow-[0_24px_60px_rgba(0,0,0,0.35)]">
@@ -118,7 +110,6 @@ const suggestions =
           )
         }
 
-        <!-- Header -->
         <header>
           <div class="mb-6 flex flex-wrap items-center gap-2.5">
             {
@@ -171,36 +162,18 @@ const suggestions =
             <div class="flex flex-col gap-0.5">
               <div class="text-ink text-[0.9rem] font-semibold">{author}</div>
               <div class="text-muted-custom text-[0.8rem]">
-                Senior Fullstack Engineer, AI Builder. Lima 🇵🇪
+                {tBlog.author_line}
               </div>
             </div>
           </div>
         </header>
 
-        <!-- Section divider -->
-        <div class="my-10 text-center" aria-hidden="true">
-          <span
-            class="div-mark font-display text-accent relative px-3 text-[22px] tracking-[0.3em] opacity-80"
-            >§</span
-          >
-        </div>
-
-        <!-- Prose body -->
-        <div class="prose prose-headings:no-underline max-w-none">
+        <div class="prose prose-headings:no-underline mt-10 max-w-none">
           <slot />
         </div>
 
-        <!-- Follow card -->
         <aside class="follow-card" aria-label={tBlog.follow_label}>
-          <div class="follow-card__avatar" aria-hidden="true">
-            <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
-              <path
-                d="M2 21h18v-2H2v2zm16-9.5V8a6 6 0 0 0-12 0v3.5L4 14v6h16v-6l-2-2.5zM10 8a2 2 0 0 1 4 0v3.5h-4V8z"
-              ></path>
-            </svg>
-          </div>
           <div class="follow-card__text">
-            <span class="follow-card__eyebrow">{tBlog.follow_label}</span>
             <h3 class="follow-card__title">{tBlog.follow_title}</h3>
             <p class="follow-card__body">{tBlog.follow_body}</p>
           </div>
@@ -246,7 +219,6 @@ const suggestions =
           </div>
         </aside>
 
-        <!-- Share footer -->
         <footer class="border-line mt-10 border-t pt-8">
           <div class="flex flex-wrap items-center justify-between gap-4">
             <span class="text-muted-custom text-[14px] font-medium">
@@ -293,15 +265,9 @@ const suggestions =
         </footer>
       </article>
 
-      <AskAiSidebar
-        tag={tagLabel}
-        postTitle={title}
-        postSubtitle={shortDescription}
-        suggestions={suggestions}
-      />
+      <AskAiSidebar lang={lang} headings={headings} />
     </div>
 
-    <!-- Post navigation -->
     {
       (prevPost || nextPost) && (
         <nav class="post-nav mx-auto grid max-w-[720px] grid-cols-1 gap-[14px] pb-16 min-[640px]:grid-cols-2">
@@ -346,7 +312,6 @@ const suggestions =
     }
   </div>
 
-  <!-- More posts -->
   {
     morePosts.length > 0 && (
       <section class="more-posts border-line border-t">
@@ -408,26 +373,6 @@ const suggestions =
 </script>
 
 <style>
-  /* Section divider with lines */
-  .div-mark::before,
-  .div-mark::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    width: 80px;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, var(--line));
-  }
-  .div-mark::before {
-    right: 100%;
-    transform: translateY(-50%) scaleX(-1);
-  }
-  .div-mark::after {
-    left: 100%;
-    transform: translateY(-50%);
-  }
-
-  /* Cover pseudo-element overlay — cannot be Tailwind */
   .article-cover::after {
     content: '';
     position: absolute;
@@ -440,7 +385,6 @@ const suggestions =
     pointer-events: none;
   }
 
-  /* Prose text colors — uses project CSS vars, responds to theme automatically */
   article :global(.prose) {
     --tw-prose-body: var(--ink-soft);
     --tw-prose-headings: var(--ink);
@@ -458,7 +402,6 @@ const suggestions =
     --tw-prose-td-borders: var(--line);
   }
 
-  /* Prose slot overrides — :global needed for slot content */
   article :global(.prose h1),
   article :global(.prose h2),
   article :global(.prose h3),
@@ -487,58 +430,13 @@ const suggestions =
     color: inherit;
   }
 
-  /* Follow card */
   .follow-card {
-    position: relative;
     margin-top: 48px;
-    background: color-mix(in oklab, var(--bg-2) 90%, var(--accent));
-    border: 1px solid color-mix(in oklab, var(--accent) 25%, var(--line));
-    border-radius: var(--r-lg);
-    padding: 28px;
-    overflow: hidden;
+    padding-top: 28px;
+    border-top: 1px solid var(--line);
     display: grid;
-    grid-template-columns: 64px 1fr;
-    grid-template-rows: auto auto;
-    gap: 0 20px;
-    align-items: start;
-  }
-  .follow-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background: linear-gradient(
-      90deg,
-      transparent,
-      var(--accent),
-      var(--coral),
-      transparent
-    );
-  }
-  .follow-card__avatar {
-    grid-column: 1;
-    grid-row: 1;
-    width: 44px;
-    height: 44px;
-    border-radius: var(--r-sm);
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    background: color-mix(in oklab, var(--accent) 18%, var(--bg-2));
-    color: var(--accent);
-    border: 1px solid color-mix(in oklab, var(--accent) 35%, var(--line));
-  }
-  .follow-card__text {
-    grid-column: 2;
-  }
-  .follow-card__eyebrow {
-    display: block;
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--accent);
-    margin-bottom: 6px;
+    grid-template-columns: 1fr;
+    gap: 18px;
   }
   .follow-card__title {
     font-family: var(--font-display);
@@ -556,8 +454,6 @@ const suggestions =
     margin: 0;
   }
   .follow-card__ctas {
-    grid-column: 1 / -1;
-    margin-top: 20px;
     display: flex;
     flex-direction: row;
     gap: 12px;

@@ -113,9 +113,6 @@ export type LanguageLocale = {
     see_all: string
     index_title: string
     index_subtitle: string
-    index_stat_posts: string
-    index_stat_topics: string
-    index_stat_cats: string
     filter_label: string
     filter_all: string
     filter_search_placeholder: string
@@ -138,6 +135,20 @@ export type LanguageLocale = {
     share_prompt: string
     share_cta: string
     contact_cta: string
+    toc_title: string
+    ai_title: string
+    ai_intro: string
+    ai_placeholder: string
+    ai_send: string
+    ai_user: string
+    ai_error: string
+    ai_empty: string
+    ai_open: string
+    ai_close: string
+    ai_ask_selection: string
+    ai_selection_prompt: string
+    ai_suggestions: string[]
+    author_line: string
   }
   ai: {
     greeting: string

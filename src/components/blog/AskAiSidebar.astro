@@ -1,104 +1,197 @@
 ---
-interface Props {
-  tag?: string
-  postTitle?: string
-  postSubtitle?: string
-  suggestions?: string[]
+import { useTranslation } from 'src/i18n/utils'
+
+interface Heading {
+  depth: number
+  slug: string
+  text: string
 }
 
-const {
-  suggestions = [
-    'Resúmeme el post en 3 líneas',
-    '¿Cuál es el punto más importante?',
-    '¿Cómo aplicar esto en producción?'
-  ]
-} = Astro.props
+interface Props {
+  lang: 'es' | 'en'
+  headings?: Heading[]
+}
+
+const { lang, headings = [] } = Astro.props
+const t = useTranslation(lang)
+const tBlog = t('blog')
+const toc = headings.filter((h) => h.depth === 2 || h.depth === 3)
+const strings = {
+  user: tBlog.ai_user,
+  error: tBlog.ai_error,
+  empty: tBlog.ai_empty,
+  selectionPrompt: tBlog.ai_selection_prompt
+}
 ---
 
-<aside
-  class="sticky top-[92px] flex hidden flex-col gap-[18px] self-start min-[1080px]:block"
->
-  <div
-    id="ask-ai-card"
-    class="ask-ai-card from-bg-2 to-bg-2/80 border-line relative overflow-hidden rounded-[var(--r-lg)] border bg-gradient-to-b shadow-[0_18px_40px_rgba(0,0,0,0.28)]"
-  >
-    <div class="flex items-center gap-2.5 px-4 pt-3.5 pb-2">
-      <span
-        class="aai-dot bg-mint h-2 w-2 shrink-0 rounded-full"
-        aria-hidden="true"></span>
-      <h3
-        class="font-display text-ink m-0 flex-1 text-[14.5px] leading-tight font-bold tracking-[-0.015em]"
-      >
-        ¿Dudas? Pregúntale a Lee-AI
-      </h3>
-      <span
-        class="text-muted-custom border-line bg-bg/60 rounded-full border px-[7px] py-0.5 font-mono text-[10.5px] tracking-[0.03em]"
-      >
-        haiku
-      </span>
-    </div>
+<blog-ai-sidebar data-strings={JSON.stringify(strings)}>
+  <aside class="aai-aside" data-aai-aside>
+    {
+      toc.length > 0 && (
+        <nav class="aai-toc" aria-label={tBlog.toc_title} data-aai-toc>
+          <p class="aai-toc-title">{tBlog.toc_title}</p>
+          <ol>
+            {toc.map((h) => (
+              <li class:list={[h.depth === 3 && 'aai-toc-sub']}>
+                <a href={`#${h.slug}`} data-toc-link={h.slug}>
+                  {h.text}
+                </a>
+              </li>
+            ))}
+          </ol>
+        </nav>
+      )
+    }
 
-    <p class="text-muted-custom m-0 px-4 pb-3 text-[12.5px] leading-[1.5]">
-      Un asistente que <b class="text-ink-soft">leyó este post</b> y responde como
-      si fuera yo. Haz preguntas técnicas o pide un resumen.
-    </p>
-
-    <div class="flex flex-wrap gap-1.5 px-4 pb-3">
-      {
-        suggestions.map((q) => (
-          <button
-            data-q={q}
-            class="border-line text-ink-soft hover:bg-accent/10 hover:border-accent/40 hover:text-ink cursor-pointer rounded-lg border bg-transparent px-2.5 py-1.5 font-mono text-[11px] leading-tight transition-all hover:-translate-y-px"
-          >
-            {q}
-          </button>
-        ))
-      }
-    </div>
-
-    <div
-      id="aai-conv"
-      class="aai-conv-scroll flex max-h-[340px] flex-col gap-3 overflow-y-auto scroll-smooth px-3.5 pb-1 empty:hidden"
-    >
-    </div>
-
-    <form
-      id="aai-form"
-      class="border-line bg-bg/70 flex items-center border-t px-3 py-2.5"
-    >
-      <span class="text-accent px-2 font-mono text-[15px] font-bold">›</span>
-      <input
-        type="text"
-        placeholder="Pregunta sobre el post..."
-        autocomplete="off"
-        maxlength="240"
-        class="text-ink placeholder:text-muted-custom min-w-0 flex-1 border-none bg-transparent px-0.5 py-1.5 font-sans text-[13.5px] outline-none"
-      />
-      <button
-        class="aai-send bg-accent disabled:bg-bg-3 disabled:text-muted-custom flex h-[30px] w-[30px] shrink-0 cursor-pointer items-center justify-center rounded-lg border-none text-[#0b0c10] transition-transform hover:-translate-y-px disabled:translate-y-0 disabled:cursor-wait"
-        type="submit"
-        aria-label="Enviar"
-      >
-        <svg
-          viewBox="0 0 24 24"
-          width="14"
-          height="14"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2.4"
-          stroke-linecap="round"
-          stroke-linejoin="round"
+    <div class="aai-card" data-aai-card>
+      <div class="aai-head">
+        <span class="aai-dot" aria-hidden="true"></span>
+        <h3 class="aai-title">{tBlog.ai_title}</h3>
+        <button
+          type="button"
+          class="aai-close"
+          data-aai-close
+          aria-label={tBlog.ai_close}
         >
-          <path d="M5 12h14M13 6l6 6-6 6"></path>
-        </svg>
-      </button>
-    </form>
-  </div>
-</aside>
+          <svg
+            viewBox="0 0 20 20"
+            width="16"
+            height="16"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            aria-hidden="true"><path d="M4 4l12 12M16 4L4 16"></path></svg
+          >
+        </button>
+      </div>
 
-<style>
-  /* Top accent bar — ::before cannot be Tailwind */
-  .ask-ai-card::before {
+      <p class="aai-intro">{tBlog.ai_intro}</p>
+
+      <div class="aai-suggestions">
+        {
+          tBlog.ai_suggestions.map((q) => (
+            <button type="button" class="aai-suggest" data-q={q}>
+              {q}
+            </button>
+          ))
+        }
+      </div>
+
+      <div class="aai-conv" data-aai-conv></div>
+
+      <form class="aai-form" data-aai-form>
+        <span class="aai-prompt" aria-hidden="true">›</span>
+        <input
+          type="text"
+          class="aai-input"
+          placeholder={tBlog.ai_placeholder}
+          autocomplete="off"
+          maxlength="240"
+          aria-label={tBlog.ai_placeholder}
+        />
+        <button class="aai-send" type="submit" aria-label={tBlog.ai_send}>
+          <svg
+            viewBox="0 0 24 24"
+            width="14"
+            height="14"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.4"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg
+          >
+        </button>
+      </form>
+    </div>
+  </aside>
+
+  <button type="button" class="aai-fab" data-aai-open>
+    <svg
+      viewBox="0 0 24 24"
+      width="16"
+      height="16"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      aria-hidden="true"
+      ><path
+        d="M12 2 L13.5 8.5 L20 10 L13.5 11.5 L12 18 L10.5 11.5 L4 10 L10.5 8.5 Z"
+      ></path></svg
+    >
+    {tBlog.ai_open}
+  </button>
+
+  <button type="button" class="aai-selection" data-aai-selection hidden>
+    {tBlog.ai_ask_selection}
+  </button>
+</blog-ai-sidebar>
+
+<style is:global>
+  blog-ai-sidebar {
+    display: contents;
+  }
+  .aai-aside {
+    position: sticky;
+    top: calc(var(--header-h) + 20px);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    align-self: start;
+  }
+  .aai-toc {
+    padding: 0 4px;
+  }
+  .aai-toc-title {
+    margin: 0 0 10px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--muted);
+  }
+  .aai-toc ol {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-left: 1px solid var(--line);
+  }
+  .aai-toc li {
+    margin: 0;
+  }
+  .aai-toc-sub a {
+    padding-left: 24px;
+    font-size: 12.5px;
+  }
+  .aai-toc a {
+    display: block;
+    padding: 5px 0 5px 14px;
+    margin-left: -1px;
+    border-left: 2px solid transparent;
+    color: var(--muted);
+    font-size: 13.5px;
+    line-height: 1.35;
+    transition:
+      color 0.2s,
+      border-color 0.2s;
+  }
+  .aai-toc a:hover {
+    color: var(--ink);
+  }
+  .aai-toc a.is-active {
+    color: var(--ink);
+    border-left-color: var(--accent);
+  }
+  .aai-card {
+    position: relative;
+    overflow: hidden;
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+    border-radius: var(--r-lg);
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.28);
+  }
+  .aai-card::before {
     content: '';
     position: absolute;
     top: 0;
@@ -114,50 +207,152 @@ const {
     );
     opacity: 0.85;
   }
-
-  /* Pulsing dot animation */
+  .aai-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 16px 8px;
+  }
   .aai-dot {
-    box-shadow: 0 0 0 0 color-mix(in oklab, var(--mint) 55%, transparent);
-    animation: aai-pulse 2.2s ease-out infinite;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--mint);
+    box-shadow: 0 0 0 3px color-mix(in oklab, var(--mint) 25%, transparent);
+    flex-shrink: 0;
+  }
+  .aai-title {
+    flex: 1;
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: 14.5px;
+    font-weight: 700;
+    letter-spacing: -0.015em;
+    line-height: 1.2;
+    color: var(--ink);
+  }
+  .aai-close {
+    display: none;
+    width: 30px;
+    height: 30px;
+    border: 1px solid var(--line);
+    border-radius: 50%;
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+  }
+  .aai-intro {
+    margin: 0;
+    padding: 0 16px 12px;
+    font-size: 12.5px;
+    line-height: 1.5;
+    color: var(--muted);
+  }
+  .aai-suggestions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 0 16px 12px;
+  }
+  .aai-suggest {
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: transparent;
+    color: var(--ink-soft);
+    font: inherit;
+    font-size: 12.5px;
+    font-weight: 500;
+    line-height: 1.2;
+    padding: 6px 11px;
+    cursor: pointer;
+    transition:
+      border-color 0.2s,
+      color 0.2s,
+      background 0.2s;
+  }
+  .aai-suggest:hover {
+    border-color: var(--accent);
+    color: var(--ink);
+    background: color-mix(in oklab, var(--accent) 10%, transparent);
+  }
+  .aai-conv {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-height: 340px;
+    overflow-y: auto;
+    padding: 0 14px 6px;
+    scrollbar-width: thin;
+  }
+  .aai-conv:empty {
+    display: none;
+  }
+  .aai-form {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 12px;
+    border-top: 1px solid var(--line);
+    background: color-mix(in oklab, var(--bg) 70%, transparent);
+  }
+  .aai-prompt {
+    color: var(--accent);
+    font-family: var(--font-mono);
+    font-size: 15px;
+    font-weight: 700;
+    padding: 0 4px;
+  }
+  .aai-input {
+    flex: 1;
+    min-width: 0;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: var(--ink);
+    font: inherit;
+    font-size: 13.5px;
+    padding: 6px 0;
+  }
+  .aai-input::placeholder {
+    color: var(--muted);
+  }
+  .aai-send {
+    width: 30px;
+    height: 30px;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: var(--r-sm);
+    background: var(--accent);
+    color: #0b0c10;
+    cursor: pointer;
+  }
+  .aai-send:disabled {
+    background: var(--bg-3);
+    color: var(--muted);
+    cursor: wait;
   }
 
-  @keyframes aai-pulse {
-    0% {
-      box-shadow: 0 0 0 0 color-mix(in oklab, var(--mint) 55%, transparent);
-    }
-    70% {
-      box-shadow: 0 0 0 7px color-mix(in oklab, var(--mint) 0%, transparent);
-    }
-    100% {
-      box-shadow: 0 0 0 0 color-mix(in oklab, var(--mint) 0%, transparent);
-    }
-  }
-
-  /* Custom scrollbar */
-  .aai-conv-scroll::-webkit-scrollbar {
-    width: 5px;
-  }
-  .aai-conv-scroll::-webkit-scrollbar-thumb {
-    background: var(--line);
-    border-radius: 3px;
-  }
-
-  /* Dynamically-created message elements — must be :global since JS injects them */
-  :global(.aai-msg) {
+  .aai-msg {
     display: grid;
     grid-template-columns: 26px 1fr;
     gap: 8px;
     align-items: start;
-    animation: aai-in 0.4s cubic-bezier(0.2, 0.7, 0.3, 1) both;
+    animation: msgIn 0.4s cubic-bezier(0.2, 0.7, 0.3, 1) both;
   }
-  :global(.aai-msg.aai-msg-user) {
+  .aai-msg-user {
     grid-template-columns: 1fr 26px;
   }
-  :global(.aai-msg.aai-msg-user .aai-avatar) {
+  .aai-msg-user .aai-avatar {
     order: 2;
+    background: color-mix(in oklab, var(--coral) 80%, transparent);
+    color: #fff;
   }
-
-  :global(.aai-avatar) {
+  .aai-avatar {
     width: 26px;
     height: 26px;
     border-radius: 50%;
@@ -171,12 +366,7 @@ const {
     color: #0b0c10;
     flex-shrink: 0;
   }
-  :global(.aai-msg-user .aai-avatar) {
-    background: color-mix(in oklab, var(--coral) 80%, transparent);
-    color: #fff;
-  }
-
-  :global(.aai-bubble) {
+  .aai-bubble {
     padding: 10px 12px;
     background: color-mix(in oklab, var(--bg) 60%, transparent);
     border: 1px solid var(--line);
@@ -184,22 +374,24 @@ const {
     font-size: 13px;
     line-height: 1.55;
     color: var(--ink);
+    min-width: 0;
+    overflow-wrap: anywhere;
   }
-  :global(.aai-msg-user .aai-bubble) {
+  .aai-msg-user .aai-bubble {
     background: color-mix(in oklab, var(--coral) 10%, var(--bg-2));
     border-color: color-mix(in oklab, var(--coral) 25%, var(--line));
   }
-  :global(.aai-bubble p) {
+  .aai-bubble p {
     margin: 0;
   }
-  :global(.aai-bubble p + p) {
+  .aai-bubble p + p {
     margin-top: 0.6em;
   }
-  :global(.aai-bubble b) {
+  .aai-bubble b {
     color: var(--accent);
     font-weight: 600;
   }
-  :global(.aai-bubble code) {
+  .aai-bubble code {
     font-family: var(--font-mono);
     font-size: 0.88em;
     background: color-mix(in oklab, var(--accent) 12%, transparent);
@@ -207,83 +399,244 @@ const {
     padding: 1px 5px;
     border-radius: 4px;
   }
-
-  :global(.aai-thinking) {
+  .aai-thinking {
     display: inline-flex;
     align-items: center;
     gap: 4px;
   }
-  :global(.aai-thinking span) {
+  .aai-thinking span {
     width: 5px;
     height: 5px;
     border-radius: 50%;
     background: var(--accent);
-    animation: aai-bounce 1.2s infinite;
+    animation: bounce 1.2s infinite;
   }
-  :global(.aai-thinking span:nth-child(2)) {
+  .aai-thinking span:nth-child(2) {
     animation-delay: 0.15s;
   }
-  :global(.aai-thinking span:nth-child(3)) {
+  .aai-thinking span:nth-child(3) {
     animation-delay: 0.3s;
   }
 
-  @keyframes aai-bounce {
-    0%,
-    80%,
-    100% {
-      transform: translateY(0);
-      opacity: 0.4;
-    }
-    40% {
-      transform: translateY(-3px);
-      opacity: 1;
-    }
+  .aai-fab {
+    display: none;
+    position: fixed;
+    right: 16px;
+    bottom: 16px;
+    z-index: 30;
+    align-items: center;
+    gap: 8px;
+    height: 44px;
+    padding: 0 16px;
+    border: none;
+    border-radius: 999px;
+    background: var(--accent);
+    color: #0b0c10;
+    font: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+    cursor: pointer;
   }
 
-  @keyframes aai-in {
-    from {
-      opacity: 0;
-      transform: translateY(4px);
+  .aai-selection {
+    position: absolute;
+    z-index: 25;
+    transform: translate(-50%, -100%);
+    margin-top: -10px;
+    padding: 7px 12px;
+    border: 1px solid color-mix(in oklab, var(--accent) 50%, var(--line));
+    border-radius: 999px;
+    background: var(--bg-2);
+    color: var(--ink);
+    font: inherit;
+    font-size: 12.5px;
+    font-weight: 600;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
+    cursor: pointer;
+    animation: msgIn 0.2s ease both;
+  }
+  .aai-selection[hidden] {
+    display: none;
+  }
+
+  @media (max-width: 1079px) {
+    .aai-toc {
+      display: none;
     }
-    to {
-      opacity: 1;
-      transform: none;
+    .aai-fab {
+      display: inline-flex;
+    }
+    .aai-aside {
+      position: fixed;
+      inset: auto 12px 12px;
+      z-index: 40;
+      display: none;
+      max-height: min(78vh, 640px);
+    }
+    .aai-aside.is-open {
+      display: flex;
+    }
+    .aai-card {
+      display: flex;
+      flex-direction: column;
+      max-height: inherit;
+    }
+    .aai-conv {
+      max-height: none;
+      flex: 1;
+    }
+    .aai-close {
+      display: inline-flex;
+    }
+    .aai-fab.is-hidden {
+      display: none;
     }
   }
 </style>
 
 <script>
-  const card = document.getElementById('ask-ai-card')
-  if (card) {
-    const conv = document.getElementById('aai-conv')
-    const form = document.getElementById('aai-form')
-    const input = form?.querySelector('input') as HTMLInputElement | null
-    const sendBtn = form?.querySelector('.aai-send') as HTMLButtonElement | null
-    const suggestBtns = card.querySelectorAll('[data-q]')
+  class BlogAiSidebar extends HTMLElement {
+    private strings: Record<string, string> = {}
+    private history: Array<{ role: string; content: string }> = []
+    private conv!: HTMLElement
+    private input!: HTMLInputElement
+    private sendBtn!: HTMLButtonElement
+    private aside!: HTMLElement
+    private fab!: HTMLElement
+    private selectionBtn!: HTMLButtonElement
+    private context = { title: '', subtitle: '', tag: '', body: '' }
 
-    const article = document.querySelector('.blog-article')
-    const title =
-      article?.querySelector('.display-title')?.textContent?.trim() ?? ''
-    const subtitle =
-      article?.querySelector('.subtitle')?.textContent?.trim() ?? ''
-    const tag = article?.querySelector('.tag-pill')?.textContent?.trim() ?? ''
+    connectedCallback() {
+      this.strings = JSON.parse(this.dataset.strings || '{}')
+      this.conv = this.querySelector('[data-aai-conv]')!
+      this.aside = this.querySelector('[data-aai-aside]')!
+      this.fab = this.querySelector('[data-aai-open]')!
+      this.selectionBtn = this.querySelector('[data-aai-selection]')!
+      const form = this.querySelector<HTMLFormElement>('[data-aai-form]')!
+      this.input = form.querySelector('input')!
+      this.sendBtn = form.querySelector('.aai-send')!
 
-    let bodyText = ''
-    const proseEl = article?.querySelector('.prose')
-    if (proseEl) {
-      const clone = proseEl.cloneNode(true) as HTMLElement
-      clone.querySelectorAll('pre').forEach((p) => {
-        ;(p as HTMLElement).textContent = '\n[código]\n' + p.textContent + '\n'
+      this.readArticle()
+      form.addEventListener('submit', (e) => {
+        e.preventDefault()
+        this.ask(this.input.value)
       })
-      bodyText = clone.innerText
+      this.querySelectorAll<HTMLElement>('[data-q]').forEach((b) =>
+        b.addEventListener('click', () => this.ask(b.dataset.q ?? ''))
+      )
+      this.fab.addEventListener('click', () => this.open())
+      this.querySelector('[data-aai-close]')?.addEventListener('click', () =>
+        this.close()
+      )
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') this.close()
+      })
+      this.bindSelection()
+      this.bindToc()
+    }
+
+    private readArticle() {
+      const article = document.querySelector('.blog-article')
+      this.context.title =
+        article?.querySelector('.display-title')?.textContent?.trim() ?? ''
+      this.context.subtitle =
+        article?.querySelector('.subtitle')?.textContent?.trim() ?? ''
+      this.context.tag =
+        article?.querySelector('.tag-pill')?.textContent?.trim() ?? ''
+      const prose = article?.querySelector('.prose')
+      if (!prose) return
+      const clone = prose.cloneNode(true) as HTMLElement
+      clone.querySelectorAll('pre').forEach((p) => {
+        p.textContent = '\n[código]\n' + p.textContent + '\n'
+      })
+      this.context.body = clone.innerText
         .replace(/\n{3,}/g, '\n\n')
         .trim()
         .slice(0, 6000)
     }
 
-    const history: Array<{ role: string; content: string }> = []
+    private open() {
+      this.aside.classList.add('is-open')
+      this.fab.classList.add('is-hidden')
+      this.input.focus()
+    }
+    private close() {
+      this.aside.classList.remove('is-open')
+      this.fab.classList.remove('is-hidden')
+    }
 
-    function esc(s: string) {
+    private bindSelection() {
+      const article = document.querySelector<HTMLElement>(
+        '.blog-article .prose'
+      )
+      if (!article) return
+      const hide = () => {
+        this.selectionBtn.hidden = true
+      }
+      let pending = ''
+      document.addEventListener('selectionchange', () => {
+        const sel = window.getSelection()
+        const text = sel?.toString().trim() ?? ''
+        if (!sel || sel.isCollapsed || text.length < 12 || text.length > 400) {
+          hide()
+          return
+        }
+        const range = sel.getRangeAt(0)
+        if (!article.contains(range.commonAncestorContainer)) {
+          hide()
+          return
+        }
+        const rect = range.getBoundingClientRect()
+        pending = text
+        this.selectionBtn.style.left = `${rect.left + rect.width / 2 + window.scrollX}px`
+        this.selectionBtn.style.top = `${rect.top + window.scrollY}px`
+        this.selectionBtn.hidden = false
+      })
+      this.selectionBtn.addEventListener('mousedown', (e) => e.preventDefault())
+      this.selectionBtn.addEventListener('click', () => {
+        const q = (this.strings.selectionPrompt || '{text}').replace(
+          '{text}',
+          pending.replace(/\s+/g, ' ')
+        )
+        hide()
+        window.getSelection()?.removeAllRanges()
+        if (window.matchMedia('(max-width: 1079px)').matches) this.open()
+        this.ask(q)
+      })
+    }
+
+    private bindToc() {
+      const links = Array.from(
+        this.querySelectorAll<HTMLAnchorElement>('[data-toc-link]')
+      )
+      const targets = links
+        .map((l) => document.getElementById(l.dataset.tocLink || ''))
+        .filter((el): el is HTMLElement => !!el)
+      if (!targets.length) return
+      let frame = 0
+      const update = () => {
+        frame = 0
+        const line = window.innerHeight * 0.3
+        let current = targets[0]
+        for (const t of targets) {
+          if (t.getBoundingClientRect().top <= line) current = t
+        }
+        links.forEach((l) =>
+          l.classList.toggle('is-active', l.dataset.tocLink === current.id)
+        )
+      }
+      window.addEventListener(
+        'scroll',
+        () => {
+          if (!frame) frame = requestAnimationFrame(update)
+        },
+        { passive: true }
+      )
+      update()
+    }
+
+    private esc(s: string) {
       return String(s).replace(
         /[&<>"']/g,
         (c) =>
@@ -297,8 +650,8 @@ const {
       )
     }
 
-    function renderMd(s: string) {
-      return esc(s)
+    private renderMd(s: string) {
+      return this.esc(s)
         .replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>')
         .replace(/`([^`]+)`/g, '<code>$1</code>')
         .split(/\n\n+/)
@@ -306,68 +659,53 @@ const {
         .join('')
     }
 
-    function addMsg(role: string, text: string) {
-      if (!conv) return
+    private addMsg(role: 'user' | 'assistant', html: string) {
       const el = document.createElement('div')
-      el.className = 'aai-msg aai-msg-' + role
-      const av = role === 'user' ? 'TÚ' : 'L'
-      el.innerHTML = `<div class="aai-avatar">${av}</div><div class="aai-bubble">${role === 'user' ? `<p>${esc(text)}</p>` : renderMd(text)}</div>`
-      conv.appendChild(el)
-      conv.scrollTop = conv.scrollHeight
+      el.className = `aai-msg aai-msg-${role}`
+      const avatar =
+        role === 'user' ? this.esc(this.strings.user || 'YOU') : 'L'
+      el.innerHTML = `<div class="aai-avatar">${avatar}</div><div class="aai-bubble">${html}</div>`
+      this.conv.appendChild(el)
+      this.conv.scrollTop = this.conv.scrollHeight
       return el
     }
 
-    function addThinking() {
-      if (!conv) return null
-      const el = document.createElement('div')
-      el.className = 'aai-msg aai-msg-assistant'
-      el.innerHTML = `<div class="aai-avatar">L</div><div class="aai-bubble"><div class="aai-thinking"><span></span><span></span><span></span></div></div>`
-      conv.appendChild(el)
-      conv.scrollTop = conv.scrollHeight
-      return el
-    }
-
-    async function ask(q: string) {
-      q = q.trim()
+    private async ask(question: string) {
+      const q = question.trim()
       if (!q) return
-      if (input) input.value = ''
-      addMsg('user', q)
-      history.push({ role: 'user', content: q })
-      if (sendBtn) sendBtn.disabled = true
-      const thinking = addThinking()
+      this.input.value = ''
+      this.addMsg('user', `<p>${this.esc(q)}</p>`)
+      this.history.push({ role: 'user', content: q })
+      this.sendBtn.disabled = true
+      const thinking = this.addMsg(
+        'assistant',
+        '<div class="aai-thinking"><span></span><span></span><span></span></div>'
+      )
       try {
         const res = await fetch('/api/ask-blog', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            messages: history.slice(-6),
-            context: { title, subtitle, tag, body: bodyText }
+            messages: this.history.slice(-6),
+            context: { ...this.context, lang: document.documentElement.lang }
           })
         })
         const data = await res.json()
-        thinking?.remove()
-        const answer = data.answer ?? 'No pude generar una respuesta.'
-        addMsg('assistant', answer)
-        history.push({ role: 'assistant', content: answer })
+        thinking.remove()
+        const answer = data.answer ?? this.strings.empty
+        this.addMsg('assistant', this.renderMd(answer))
+        this.history.push({ role: 'assistant', content: answer })
       } catch {
-        if (thinking)
-          thinking.querySelector('.aai-bubble')!.innerHTML =
-            `<p>Algo se cayó. Intenta de nuevo.</p>`
+        thinking.querySelector('.aai-bubble')!.innerHTML =
+          `<p>${this.esc(this.strings.error || 'Error')}</p>`
       } finally {
-        if (sendBtn) sendBtn.disabled = false
-        if (input) input.focus()
+        this.sendBtn.disabled = false
+        this.input.focus()
       }
     }
+  }
 
-    form?.addEventListener('submit', (e) => {
-      e.preventDefault()
-      if (input) ask(input.value)
-    })
-
-    suggestBtns.forEach((b) =>
-      b.addEventListener('click', () =>
-        ask((b as HTMLElement).dataset.q ?? b.textContent ?? '')
-      )
-    )
+  if (!customElements.get('blog-ai-sidebar')) {
+    customElements.define('blog-ai-sidebar', BlogAiSidebar)
   }
 </script>

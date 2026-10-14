@@ -134,15 +134,11 @@ const locale: LanguageLocale = {
     index_title: 'Notes from the trenches',
     index_subtitle:
       "What I'm learning building backends, agents, and SaaS in production. No hype, no '10 reasons why...' — just code, decisions, and sometimes three cats giving their take.",
-    index_stat_posts: 'Posts',
-    index_stat_topics: 'Topics',
-    index_stat_cats: 'Cats',
     filter_label: 'Filter',
     filter_all: 'All',
     filter_search_placeholder: 'Search posts...',
     featured_label: 'Latest',
-    closer_title:
-      "Want to get new posts <span class='text-accent'>before anyone else</span>?",
+    closer_title: 'Want to get new posts before anyone else?',
     closer_text:
       'No newsletter yet — but you can follow me on GitHub or LinkedIn. If something resonated, write to me. I reply to everything.',
     closer_github: 'Follow on GitHub',
@@ -162,7 +158,26 @@ const locale: LanguageLocale = {
     more_posts_title: 'Other things I wrote',
     share_prompt: 'Was this helpful?',
     share_cta: 'Share',
-    contact_cta: 'Contact'
+    contact_cta: 'Contact',
+    toc_title: 'In this post',
+    ai_title: 'Ask Lee AI about this post',
+    ai_intro:
+      'An assistant that read this post and answers as if it were me. Ask technical questions or request a summary.',
+    ai_placeholder: 'Ask about the post…',
+    ai_send: 'Send',
+    ai_user: 'YOU',
+    ai_error: 'Something broke. Try again.',
+    ai_empty: 'I could not generate an answer.',
+    ai_open: 'Ask the AI',
+    ai_close: 'Close',
+    ai_ask_selection: 'Ask about this',
+    ai_selection_prompt: 'Explain this part of the post: "{text}"',
+    ai_suggestions: [
+      'Summarize the post in 3 lines',
+      'What is the most important point?',
+      'How do I apply this in production?'
+    ],
+    author_line: 'Senior Fullstack Engineer and AI Builder. Lima.'
   },
   ai: {
     greeting:
