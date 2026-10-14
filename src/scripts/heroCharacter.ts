@@ -4,9 +4,8 @@ type Three = typeof ThreeNs
 
 const MODEL_URL = '/models/lee.glb'
 const DRACO_PATH = '/draco/'
-const IDLE_CLIP = 'Walking'
-const REACT_CLIP = 'Running'
-const REACT_SECONDS = 2.2
+const IDLE_CLIP = 'Idle_11'
+const REACT_CLIP = 'Big_Wave_Hello'
 
 export type HeroCharacterHandle = {
   dispose: () => void
@@ -70,15 +69,12 @@ export async function mountHeroCharacter(
   const react = findClip(THREE, gltf.animations, REACT_CLIP)
   const idleAction = idle ? mixer.clipAction(stripRootMotion(idle)) : null
   const reactAction = react ? mixer.clipAction(stripRootMotion(react)) : null
-  if (idleAction) {
-    idleAction.timeScale = 0.75
-    idleAction.play()
-  }
+  idleAction?.play()
 
   let reactUntil = 0
   const playReaction = () => {
     if (!reactAction || !idleAction) return
-    reactUntil = performance.now() + REACT_SECONDS * 1000
+    reactUntil = performance.now() + (react?.duration ?? 2) * 1000 - 350
     reactAction.reset().setEffectiveWeight(1).fadeIn(0.25).play()
     idleAction.fadeOut(0.25)
   }
