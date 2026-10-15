@@ -312,7 +312,7 @@ const strings = {
     background: transparent;
     color: var(--ink);
     font: inherit;
-    font-size: 13.5px;
+    font-size: 16px;
     padding: 6px 0;
   }
   .aai-input::placeholder {
@@ -422,7 +422,7 @@ const strings = {
     display: none;
     position: fixed;
     right: 16px;
-    bottom: 16px;
+    bottom: calc(16px + env(safe-area-inset-bottom));
     z-index: 30;
     align-items: center;
     gap: 8px;
@@ -469,7 +469,7 @@ const strings = {
     }
     .aai-aside {
       position: fixed;
-      inset: auto 12px 12px;
+      inset: auto 12px calc(12px + env(safe-area-inset-bottom));
       z-index: 40;
       display: none;
       max-height: min(78vh, 640px);

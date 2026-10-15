@@ -77,7 +77,7 @@ function getReadingTime(body: string): number {
 
     <div
       id="blogFilter"
-      class="border-line sticky top-[84px] z-20 mb-7 flex flex-wrap items-center gap-2.5 rounded-2xl border bg-[color-mix(in_oklab,var(--bg-2)_80%,transparent)] px-[22px] py-[18px] backdrop-blur-xl"
+      class="bf-bar border-line z-20 mb-7 flex flex-wrap items-center gap-2.5 rounded-2xl border bg-[color-mix(in_oklab,var(--bg-2)_80%,transparent)] px-[22px] py-[18px] backdrop-blur-xl"
     >
       <span class="text-muted-custom mr-1 text-[13px] font-medium"
         >{tBlog.filter_label}</span
@@ -123,7 +123,7 @@ function getReadingTime(body: string): number {
           id="bfSearch"
           type="search"
           placeholder={tBlog.filter_search_placeholder}
-          class="text-ink placeholder:text-muted-custom min-w-0 flex-1 border-none bg-transparent font-sans text-[13.5px] outline-none"
+          class="text-ink placeholder:text-muted-custom min-w-0 flex-1 border-none bg-transparent font-sans text-[16px] outline-none"
         />
       </label>
     </div>
@@ -325,7 +325,7 @@ function getReadingTime(body: string): number {
     border-radius: var(--r-sm);
     padding: 8px 12px;
     font-family: var(--font-mono);
-    font-size: 11.5px;
+    font-size: 12.5px;
     color: var(--ink);
     box-shadow: 0 12px 24px rgba(0, 0, 0, 0.35);
     white-space: nowrap;
@@ -371,6 +371,12 @@ function getReadingTime(body: string): number {
     }
   }
 
+  @media (min-width: 821px) {
+    .bf-bar {
+      position: sticky;
+      top: calc(var(--header-h) + 12px);
+    }
+  }
   .bf-search-label:focus-within {
     border-color: var(--accent);
   }
@@ -532,7 +538,7 @@ function getReadingTime(body: string): number {
     border-top: 1px solid var(--line);
   }
   .bf-count {
-    font-size: 11.5px;
+    font-size: 12.5px;
     opacity: 0.65;
   }
 

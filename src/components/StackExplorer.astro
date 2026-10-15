@@ -388,8 +388,18 @@ const clientData = JSON.stringify({
 
   @media (max-width: 540px) {
     .stack-tab {
-      padding: 12px;
-      font-size: 12.5px;
+      padding: 14px 14px;
+      font-size: 13px;
+    }
+    .stack-tabs {
+      scroll-snap-type: x proximity;
+      -webkit-overflow-scrolling: touch;
+    }
+    .stack-tab {
+      scroll-snap-align: start;
+    }
+    .term-input {
+      font-size: 16px;
     }
   }
 </style>

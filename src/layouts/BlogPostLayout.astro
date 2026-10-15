@@ -89,7 +89,7 @@ const twitterUrl = `https://twitter.com/intent/tweet?text=${shareText}&url=${sha
       <article class="blog-article max-w-[720px] min-w-0">
         <a
           href={`/${lang}/blog`}
-          class="text-muted-custom hover:text-accent mb-8 inline-block text-[13.5px] font-medium transition-colors"
+          class="text-muted-custom hover:text-accent mb-8 inline-flex min-h-11 items-center text-[14px] font-medium transition-colors"
         >
           {tBlog.back_to_blog}
         </a>
@@ -424,6 +424,11 @@ const twitterUrl = `https://twitter.com/intent/tweet?text=${shareText}&url=${sha
     padding: 0.125rem 0.375rem;
   }
 
+  article :global(.prose pre) {
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
   article :global(.prose pre code) {
     background: transparent;
     padding: 0;

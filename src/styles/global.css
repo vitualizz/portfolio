@@ -557,7 +557,7 @@ dialog.modal::backdrop {
 
 .walking-cat {
   position: fixed;
-  bottom: 18px;
+  bottom: calc(18px + env(safe-area-inset-bottom));
   left: 0;
   z-index: 4;
   pointer-events: none;
@@ -740,6 +740,35 @@ dialog.modal::backdrop {
   }
   100% {
     transform: translateY(110%);
+  }
+}
+
+@media (pointer: coarse) {
+  a,
+  button,
+  input,
+  summary,
+  [role='button'] {
+    min-height: 44px;
+  }
+  .nav-right > *,
+  .hamburger,
+  .drawer-close,
+  .modal-close,
+  .hero-actions .icon-btn,
+  .ai-send,
+  .aai-send,
+  .aai-close {
+    min-width: 44px;
+  }
+  .schip,
+  .stack-text,
+  .xp-tech span,
+  .blog-tag,
+  .tag-pill,
+  .ai-agent,
+  .ai-source {
+    min-height: 0;
   }
 }
 
