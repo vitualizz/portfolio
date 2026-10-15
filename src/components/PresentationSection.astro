@@ -309,6 +309,30 @@ const tp = t('presentation')
     );
     filter: blur(20px);
     z-index: 0;
+    transition: opacity 0.8s ease;
+  }
+  .hero-figure.is-3d::before {
+    inset: 10% 6% 12% 6%;
+    background: var(--accent);
+    border-radius: 56% 44% 40% 60% / 60% 50% 50% 40%;
+    filter: none;
+    animation: morph 12s ease-in-out infinite;
+  }
+  .hero-figure.is-3d::after {
+    content: '';
+    position: absolute;
+    left: 24%;
+    right: 30%;
+    bottom: 8.5%;
+    height: 5%;
+    border-radius: 50%;
+    background: radial-gradient(
+      ellipse at center,
+      rgba(0, 0, 0, 0.45),
+      rgba(0, 0, 0, 0) 70%
+    );
+    z-index: 1;
+    pointer-events: none;
   }
   .hero-character {
     filter: drop-shadow(0 30px 40px rgba(0, 0, 0, 0.45));
@@ -426,10 +450,20 @@ const tp = t('presentation')
 <script>
   import { whenIdle } from 'src/scripts/motion'
 
+  type NetInfo = { saveData?: boolean; effectiveType?: string }
+
+  function connectionAllows3D() {
+    const net = (navigator as Navigator & { connection?: NetInfo }).connection
+    if (!net) return true
+    if (net.saveData) return false
+    return !/(^|-)2g$|^3g$/.test(net.effectiveType ?? '')
+  }
+
   function canRender3D() {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches)
       return false
     if (!window.matchMedia('(min-width: 821px)').matches) return false
+    if (!connectionAllows3D()) return false
     const probe = document.createElement('canvas')
     return !!(probe.getContext('webgl2') || probe.getContext('webgl'))
   }

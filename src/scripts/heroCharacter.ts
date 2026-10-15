@@ -6,6 +6,8 @@ const MODEL_URL = '/models/lee.glb'
 const DRACO_PATH = '/draco/'
 const IDLE_CLIP = 'Idle_11'
 const REACT_CLIP = 'Big_Wave_Hello'
+const OUTLINE_COLOR = 0x14110d
+const TOON_STEPS = [0.35, 0.62, 0.86, 1]
 
 export type HeroCharacterHandle = {
   dispose: () => void
@@ -15,11 +17,13 @@ export async function mountHeroCharacter(
   host: HTMLElement,
   onReady: () => void
 ): Promise<HeroCharacterHandle | null> {
-  const [THREE, { GLTFLoader }, { DRACOLoader }] = await Promise.all([
-    import('three'),
-    import('three/examples/jsm/loaders/GLTFLoader.js'),
-    import('three/examples/jsm/loaders/DRACOLoader.js')
-  ])
+  const [THREE, { GLTFLoader }, { DRACOLoader }, { OutlineEffect }] =
+    await Promise.all([
+      import('three'),
+      import('three/examples/jsm/loaders/GLTFLoader.js'),
+      import('three/examples/jsm/loaders/DRACOLoader.js'),
+      import('three/examples/jsm/effects/OutlineEffect.js')
+    ])
 
   const renderer = new THREE.WebGLRenderer({
     antialias: true,
@@ -28,23 +32,23 @@ export async function mountHeroCharacter(
   })
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
   renderer.outputColorSpace = THREE.SRGBColorSpace
-  renderer.toneMapping = THREE.ACESFilmicToneMapping
-  renderer.toneMappingExposure = 1.05
   renderer.domElement.className = 'hero-3d-canvas'
   host.appendChild(renderer.domElement)
+  const outline = new OutlineEffect(renderer, {
+    defaultThickness: 0.0035,
+    defaultColor: new THREE.Color(OUTLINE_COLOR).toArray(),
+    defaultAlpha: 1
+  })
 
   const scene = new THREE.Scene()
   const camera = new THREE.PerspectiveCamera(28, 1, 0.1, 50)
   camera.position.set(0, 0.95, 3.4)
   camera.lookAt(0, 0.9, 0)
 
-  scene.add(new THREE.HemisphereLight(0xfff4d6, 0x2a2440, 1.6))
-  const key = new THREE.DirectionalLight(0xffffff, 1.8)
+  scene.add(new THREE.HemisphereLight(0xfff6e0, 0x3a3048, 1.1))
+  const key = new THREE.DirectionalLight(0xffffff, 2.2)
   key.position.set(2.5, 4, 3)
   scene.add(key)
-  const rim = new THREE.DirectionalLight(0xf3d463, 1.2)
-  rim.position.set(-3, 2, -2)
-  scene.add(rim)
 
   const loader = new GLTFLoader()
   const draco = new DRACOLoader()
@@ -53,9 +57,22 @@ export async function mountHeroCharacter(
 
   const gltf = await loader.loadAsync(MODEL_URL)
   const root = gltf.scene
+  const gradient = makeGradientMap(THREE)
+  const disposables: Array<{ dispose: () => void }> = [gradient]
   root.traverse((o) => {
     const mesh = o as ThreeNs.Mesh
-    if (mesh.isMesh) mesh.frustumCulled = false
+    if (!mesh.isMesh) return
+    mesh.frustumCulled = false
+    const source = mesh.material as ThreeNs.MeshStandardMaterial
+    const toon = new THREE.MeshToonMaterial({
+      map: source.map,
+      color: source.color,
+      gradientMap: gradient
+    })
+    source.dispose()
+    mesh.material = toon
+    disposables.push(mesh.geometry, toon)
+    if (source.map) disposables.push(source.map)
   })
   centerOnFloor(THREE, root)
   root.position.x -= 0.12
@@ -136,7 +153,7 @@ export async function mountHeroCharacter(
       neck.rotation.x += look.y * 0.2
     }
     root.rotation.y = look.x * 0.25
-    renderer.render(scene, camera)
+    outline.render(scene, camera)
   }
   tick()
   onReady()
@@ -148,11 +165,27 @@ export async function mountHeroCharacter(
       host.removeEventListener('click', playReaction)
       ro.disconnect()
       io.disconnect()
+      mixer.stopAllAction()
+      disposables.forEach((d) => d.dispose())
       draco.dispose()
       renderer.dispose()
       renderer.domElement.remove()
     }
   }
+}
+
+function makeGradientMap(THREE: Three) {
+  const data = new Uint8Array(TOON_STEPS.map((v) => Math.round(v * 255)))
+  const texture = new THREE.DataTexture(
+    data,
+    TOON_STEPS.length,
+    1,
+    THREE.RedFormat
+  )
+  texture.minFilter = THREE.NearestFilter
+  texture.magFilter = THREE.NearestFilter
+  texture.needsUpdate = true
+  return texture
 }
 
 function centerOnFloor(THREE: Three, root: ThreeNs.Object3D) {
