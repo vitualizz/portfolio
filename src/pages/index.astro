@@ -1,1 +1,22 @@
-<meta http-equiv="refresh" content="0;url=/es/" />
+---
+import { DEFAULT_LANG, LANG_CODES, LANG_ROUTE } from 'src/i18n/constants'
+import type { LanguagesCodes } from 'src/types/I18n.types'
+
+const header = Astro.request.headers.get('accept-language') ?? ''
+const wanted = header
+  .split(',')
+  .map((part) => part.trim().split(';')[0].slice(0, 2).toLowerCase())
+  .find((code) => LANG_CODES.includes(code as LanguagesCodes)) as
+  | LanguagesCodes
+  | undefined
+
+const lang = wanted ?? DEFAULT_LANG
+return new Response(null, {
+  status: 302,
+  headers: {
+    Location: `${LANG_ROUTE[lang]}/`,
+    Vary: 'Accept-Language',
+    'Cache-Control': 'no-store'
+  }
+})
+---

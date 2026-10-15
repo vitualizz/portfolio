@@ -95,8 +95,8 @@ export const askLeeOrchestrator = async (
     history.filter((m) => m.role === 'user').at(-1)?.content ?? ''
 
   const decision = await intentRouter.route(latestMessage)
+  req.onRoute?.(decision)
 
-  // Direct mode — no data lookup needed
   if (decision.mode === 'direct') {
     const system = `${PERSONA}\n\n${DIRECT_RULES}`
     const result = streamAskAnswer({ system, messages: history })
@@ -106,7 +106,6 @@ export const askLeeOrchestrator = async (
     }
   }
 
-  // Retrieve mode — run selected domain agents in parallel
   const agents = decision.toolKeys
     .map((key) => AGENT_REGISTRY[key])
     .filter(Boolean)
@@ -119,7 +118,6 @@ export const askLeeOrchestrator = async (
   const sources = activeAnswers.map((a) => a.sourceLabel)
   const toolsUsed = activeAnswers.map((a) => a.domain)
 
-  // No content from any agent — low confidence fallback
   if (activeAnswers.length === 0) {
     const system = `${PERSONA}
 
@@ -134,7 +132,6 @@ Lee responds within 24 business hours. Never guess or invent. 1–2 sentences ma
     }
   }
 
-  // Single agent — stream its answer with full persona context
   if (activeAnswers.length === 1) {
     const langLabel = lang === 'es' ? 'Spanish' : 'English'
     const system = `${PERSONA}
@@ -152,7 +149,6 @@ ${activeAnswers[0].content}`
     }
   }
 
-  // Multiple agents — synthesize
   const synthesisSystem = buildSynthesisSystem(activeAnswers, lang)
   const result = streamAskAnswer({ system: synthesisSystem, messages: history })
   return {

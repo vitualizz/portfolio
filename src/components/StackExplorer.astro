@@ -1,5 +1,6 @@
 ---
 import { stackExplorerPanels } from 'src/data/skills'
+import projects from 'src/data/projects.json'
 import { useTranslation } from 'src/i18n/utils'
 
 interface Props {
@@ -7,14 +8,57 @@ interface Props {
 }
 const { lang } = Astro.props
 const t = useTranslation(lang)
+const term = t('terminal')
+
+const stripHtml = (s: string) => s.replace(/<[^>]+>/g, '')
+
+const files: Record<string, string[]> = {
+  'about.md': [
+    stripHtml(t('about_me').biography[0]),
+    '',
+    stripHtml(t('about_me').mini_note)
+  ],
+  'motto.txt': [stripHtml(t('home').quote_text)],
+  'projects.txt': projects.map(
+    (p) => `${p.title.padEnd(16)} ${p.demo ?? p.githubUrl ?? ''}`
+  ),
+  'contact.txt': term.contact_lines
+}
+const dirs = stackExplorerPanels.map((p) => p.key)
+const projectIndex = Object.fromEntries(
+  projects
+    .filter((p) => p.demo ?? p.githubUrl)
+    .map((p) => [
+      p.title.toLowerCase().replace(/\s+/g, '-'),
+      { title: p.title, url: (p.demo ?? p.githubUrl) as string }
+    ])
+)
+const panelInfo = Object.fromEntries(
+  stackExplorerPanels.map((p) => [
+    p.key,
+    {
+      description: p.description[lang],
+      chips: p.chips.map((c) => c.label)
+    }
+  ])
+)
+const clientData = JSON.stringify({
+  files,
+  dirs,
+  panelInfo,
+  term,
+  projectIndex
+})
 ---
 
-<stack-explorer class="stack-explorer block" id="stackExplorer">
+<stack-explorer
+  class="stack-explorer block"
+  id="stackExplorer"
+  data-terminal={clientData}
+>
   <div class="stack-head">
     <div class="stack-title font-mono text-[13px]">
       <span class="text-accent font-medium">~/stack</span>
-      <span class="text-muted-custom mx-1">·</span>
-      <span class="text-ink-soft">explorer</span>
     </div>
     <div
       class="stack-legend text-muted-custom hidden gap-[14px] font-mono text-[10.5px] tracking-[0.05em] uppercase sm:inline-flex"
@@ -74,16 +118,33 @@ const t = useTranslation(lang)
     }
   </div>
 
-  <div class="stack-foot">
-    <span class="sf-mono text-accent">$ whoami</span>
-    <span
-      class="sf-line text-ink-soft font-sans text-[13.5px] leading-[1.5]"
-      set:html={t('about_me').stack_footer}
-    />
+  <div class="stack-term" data-term>
+    <div class="term-out" data-term-out aria-live="polite">
+      <div class="term-line">
+        <span class="term-prompt">$</span>
+        <span class="term-cmd">whoami</span>
+      </div>
+      <div class="term-line term-res">{term.whoami}</div>
+      <div class="term-line term-res term-hint">
+        <span set:html={t('about_me').stack_footer} />
+      </div>
+    </div>
+    <form class="term-form" data-term-form autocomplete="off">
+      <label class="term-prompt" for="stackTermInput">$</label>
+      <input
+        id="stackTermInput"
+        class="term-input"
+        type="text"
+        maxlength="140"
+        placeholder={term.placeholder}
+        spellcheck="false"
+        autocapitalize="off"
+      />
+    </form>
   </div>
 </stack-explorer>
 
-<style>
+<style is:global>
   .stack-explorer {
     background: linear-gradient(
       180deg,
@@ -91,7 +152,7 @@ const t = useTranslation(lang)
       color-mix(in oklab, var(--bg-2) 70%, var(--bg))
     );
     border: 1px solid var(--line);
-    border-radius: 20px;
+    border-radius: var(--r-lg);
     overflow: hidden;
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
     position: relative;
@@ -208,17 +269,14 @@ const t = useTranslation(lang)
     padding: 8px 13px;
     background: color-mix(in oklab, var(--bg) 60%, transparent);
     border: 1px solid var(--line);
-    border-radius: 11px;
+    border-radius: var(--r-sm);
     font-size: 13.5px;
     font-weight: 500;
     color: var(--ink-soft);
     transition:
-      transform 0.2s,
       border-color 0.2s,
-      color 0.2s,
-      box-shadow 0.2s;
+      color 0.2s;
     cursor: default;
-    animation: chipPop 0.35s cubic-bezier(0.2, 0.7, 0.3, 1) both;
   }
   .schip::before {
     content: '';
@@ -248,66 +306,84 @@ const t = useTranslation(lang)
     font-weight: 600;
   }
   .schip:hover {
-    transform: translateY(-2px);
     border-color: var(--accent);
     color: var(--ink);
   }
-  .schip.s-core:hover {
-    box-shadow: 0 8px 16px color-mix(in oklab, var(--accent) 22%, transparent);
-  }
 
-  @keyframes chipPop {
-    from {
-      opacity: 0;
-      transform: translateY(4px) scale(0.96);
-    }
-    to {
-      opacity: 1;
-      transform: none;
-    }
-  }
-  .stack-panel.is-active .schip:nth-child(1) {
-    animation-delay: 0.02s;
-  }
-  .stack-panel.is-active .schip:nth-child(2) {
-    animation-delay: 0.05s;
-  }
-  .stack-panel.is-active .schip:nth-child(3) {
-    animation-delay: 0.08s;
-  }
-  .stack-panel.is-active .schip:nth-child(4) {
-    animation-delay: 0.11s;
-  }
-  .stack-panel.is-active .schip:nth-child(5) {
-    animation-delay: 0.14s;
-  }
-  .stack-panel.is-active .schip:nth-child(6) {
-    animation-delay: 0.17s;
-  }
-  .stack-panel.is-active .schip:nth-child(7) {
-    animation-delay: 0.2s;
-  }
-  .stack-panel.is-active .schip:nth-child(8) {
-    animation-delay: 0.23s;
-  }
-  .stack-panel.is-active .schip:nth-child(9) {
-    animation-delay: 0.26s;
-  }
-  .stack-panel.is-active .schip:nth-child(10) {
-    animation-delay: 0.29s;
-  }
-
-  .stack-foot {
+  .stack-term {
     border-top: 1px dashed var(--line);
-    padding: 14px 18px;
-    display: flex;
-    align-items: baseline;
-    gap: 10px;
+    background: color-mix(in oklab, var(--bg) 40%, transparent);
     font-family: var(--font-mono);
-    font-size: 12px;
+    font-size: 12.5px;
+    line-height: 1.55;
+  }
+  .term-out {
+    max-height: 260px;
+    overflow-y: auto;
+    padding: 14px 18px 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    color: var(--ink-soft);
+    scrollbar-width: thin;
+  }
+  .term-line {
+    display: flex;
+    gap: 10px;
+    align-items: baseline;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  .term-prompt {
+    color: var(--accent);
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .term-cmd {
+    color: var(--ink);
+  }
+  .term-res {
+    color: var(--ink-soft);
+  }
+  .term-res.term-err {
+    color: var(--coral);
+  }
+  .term-hint :global(b) {
+    color: var(--ink);
+    font-weight: 600;
+  }
+  .term-form {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 18px 14px;
+  }
+  .term-input {
+    flex: 1;
+    min-width: 0;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--ink);
+    font: inherit;
+    caret-color: var(--accent);
+  }
+  .term-input::placeholder {
     color: var(--muted);
-    background: color-mix(in oklab, var(--bg) 30%, transparent);
-    flex-wrap: wrap;
+  }
+  .stack-explorer {
+    transition: box-shadow 0.35s ease;
+  }
+  .stack-explorer.is-flashing {
+    box-shadow:
+      0 0 0 2px color-mix(in oklab, var(--accent) 60%, transparent),
+      0 20px 40px rgba(0, 0, 0, 0.25);
+  }
+  .stack-explorer.is-typing .term-prompt {
+    text-shadow: 0 0 10px color-mix(in oklab, var(--accent) 70%, transparent);
+  }
+  .term-form:focus-within .term-prompt {
+    text-shadow: 0 0 10px color-mix(in oklab, var(--accent) 60%, transparent);
   }
 
   @media (max-width: 540px) {
@@ -319,26 +395,349 @@ const t = useTranslation(lang)
 </style>
 
 <script>
+  type TermData = {
+    files: Record<string, string[]>
+    dirs: string[]
+    panelInfo: Record<string, { description: string; chips: string[] }>
+    projectIndex: Record<string, { title: string; url: string }>
+    term: {
+      help: string
+      not_found: string
+      no_file: string
+      whoami: string
+      cd_done: string
+      cd_missing: string
+      ask_sent: string
+      ask_empty: string
+      meow: string
+      open_done: string
+      open_missing: string
+      theme_done: string
+      accent_done: string
+      accent_missing: string
+      welcome: string
+    }
+  }
+
+  const COMMANDS = [
+    'help',
+    'ls',
+    'cat',
+    'cd',
+    'whoami',
+    'ask',
+    'open',
+    'theme',
+    'accent',
+    'contact',
+    'meow',
+    'clear'
+  ]
+  const ACCENTS = ['yellow', 'coral', 'mint', 'violet']
+
   class StackExplorerElement extends HTMLElement {
+    private data!: TermData
+    private out!: HTMLElement
+    private input!: HTMLInputElement
+    private history: string[] = []
+    private historyIdx = -1
+    private userTookOver = false
+    private typing = false
+    private welcomed = false
+    private queued: string[] = []
+
     connectedCallback() {
+      this.data = JSON.parse(this.dataset.terminal || '{}')
+      const out = this.querySelector<HTMLElement>('[data-term-out]')
+      const form = this.querySelector<HTMLFormElement>('[data-term-form]')
+      const input = this.querySelector<HTMLInputElement>('.term-input')
+      if (!out || !form || !input) return
+      this.out = out
+      this.input = input
+
       this.querySelectorAll<HTMLButtonElement>('.stack-tab').forEach((tab) => {
-        tab.addEventListener('click', () => {
-          const key = tab.dataset.stack
-          if (!key) return
-          this.querySelectorAll('.stack-tab').forEach((t) => {
-            t.classList.remove('is-active')
-            t.setAttribute('aria-selected', 'false')
-          })
-          this.querySelectorAll('.stack-panel').forEach((p) =>
-            p.classList.remove('is-active')
-          )
-          tab.classList.add('is-active')
-          tab.setAttribute('aria-selected', 'true')
-          this.querySelector<HTMLElement>(
-            `[data-panel="${key}"]`
-          )?.classList.add('is-active')
-        })
+        tab.addEventListener('click', () => this.activate(tab.dataset.stack))
       })
+
+      form.addEventListener('submit', (e) => {
+        e.preventDefault()
+        const raw = input.value.trim()
+        if (!raw) return
+        this.userTookOver = true
+        this.history.push(raw)
+        this.historyIdx = this.history.length
+        input.value = ''
+        this.run(raw)
+      })
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Tab') {
+          e.preventDefault()
+          input.value = this.complete(input.value)
+          return
+        }
+        if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+          if (!this.history.length) return
+          e.preventDefault()
+          this.historyIdx = Math.min(
+            this.history.length,
+            Math.max(0, this.historyIdx + (e.key === 'ArrowUp' ? -1 : 1))
+          )
+          input.value = this.history[this.historyIdx] ?? ''
+        }
+      })
+      out.addEventListener('click', () => input.focus())
+      input.addEventListener('input', () => {
+        this.userTookOver = true
+      })
+      window.addEventListener('terminal:run', this.onExternalRun)
+      this.welcomeOnce()
+    }
+
+    disconnectedCallback() {
+      window.removeEventListener('terminal:run', this.onExternalRun)
+    }
+
+    private onExternalRun = (e: Event) => {
+      const cmd = (e as CustomEvent<{ command?: string }>).detail?.command
+      if (!cmd || this.userTookOver) return
+      if (document.activeElement === this.input) return
+      this.enqueue(cmd)
+    }
+
+    private enqueue(cmd: string) {
+      this.queued.push(cmd)
+      this.drain()
+    }
+
+    private drain() {
+      if (this.typing) return
+      const cmd = this.queued.shift()
+      if (!cmd) return
+      this.typing = true
+      this.classList.add('is-typing')
+      const finish = () => {
+        this.input.value = ''
+        this.run(cmd)
+        if (cmd === 'help' && !this.welcomed) {
+          this.welcomed = true
+          this.print(this.data.term.welcome)
+        }
+        this.classList.remove('is-typing')
+        this.flash()
+        this.typing = false
+        window.setTimeout(() => this.drain(), 400)
+      }
+      const reduced = window.matchMedia(
+        '(prefers-reduced-motion: reduce)'
+      ).matches
+      if (reduced) {
+        finish()
+        return
+      }
+      let i = 0
+      const tick = () => {
+        i += 1
+        this.input.value = cmd.slice(0, i)
+        if (i < cmd.length) window.setTimeout(tick, 75)
+        else window.setTimeout(finish, 280)
+      }
+      window.setTimeout(tick, 150)
+    }
+
+    private flash() {
+      this.classList.add('is-flashing')
+      window.setTimeout(() => this.classList.remove('is-flashing'), 900)
+    }
+
+    private welcomeOnce() {
+      if (this.dataset.welcomed === 'true') return
+      const obs = new IntersectionObserver(
+        (entries) => {
+          if (!entries.some((en) => en.isIntersecting)) return
+          obs.disconnect()
+          this.dataset.welcomed = 'true'
+          if (document.activeElement === this.input) return
+          this.enqueue('help')
+        },
+        { threshold: 0.6 }
+      )
+      obs.observe(this)
+    }
+
+    private complete(value: string): string {
+      const parts = value.split(/\s+/)
+      const { files, dirs, projectIndex } = this.data
+      const pick = (options: string[], prefix: string) => {
+        const hits = options.filter((o) => o.startsWith(prefix.toLowerCase()))
+        return hits.length === 1 ? hits[0] : prefix
+      }
+      if (parts.length <= 1) {
+        const done = pick(COMMANDS, parts[0] || '')
+        return done !== parts[0] ? `${done} ` : value
+      }
+      const [cmd, ...rest] = parts
+      const arg = rest.join(' ')
+      const options =
+        cmd === 'cat'
+          ? Object.keys(files)
+          : cmd === 'cd'
+            ? dirs
+            : cmd === 'ls'
+              ? [...Object.keys(files), 'stack', ...dirs]
+              : cmd === 'open'
+                ? Object.keys(projectIndex)
+                : cmd === 'accent'
+                  ? ACCENTS
+                  : cmd === 'theme'
+                    ? ['dark', 'light']
+                    : []
+      return `${cmd} ${pick(options, arg)}`
+    }
+
+    private activate(key?: string): boolean {
+      if (!key) return false
+      const tab = this.querySelector<HTMLElement>(`[data-stack="${key}"]`)
+      const panel = this.querySelector<HTMLElement>(`[data-panel="${key}"]`)
+      if (!tab || !panel) return false
+      this.querySelectorAll('.stack-tab').forEach((t) => {
+        t.classList.remove('is-active')
+        t.setAttribute('aria-selected', 'false')
+      })
+      this.querySelectorAll('.stack-panel').forEach((p) =>
+        p.classList.remove('is-active')
+      )
+      tab.classList.add('is-active')
+      tab.setAttribute('aria-selected', 'true')
+      panel.classList.add('is-active')
+      return true
+    }
+
+    private echo(cmd: string) {
+      const line = document.createElement('div')
+      line.className = 'term-line'
+      line.innerHTML = `<span class="term-prompt">$</span><span class="term-cmd"></span>`
+      line.querySelector('.term-cmd')!.textContent = cmd
+      this.out.appendChild(line)
+    }
+
+    private print(text: string, kind: 'res' | 'err' = 'res') {
+      const line = document.createElement('div')
+      line.className = `term-line term-res${kind === 'err' ? ' term-err' : ''}`
+      line.textContent = text
+      this.out.appendChild(line)
+    }
+
+    private run(raw: string) {
+      this.echo(raw)
+      const [cmd, ...rest] = raw.split(/\s+/)
+      const arg = rest.join(' ')
+      const { files, dirs, panelInfo, term } = this.data
+      const fmt = (s: string, k: string, v: string) => s.replace(`{${k}}`, v)
+
+      switch (cmd.toLowerCase()) {
+        case 'help':
+        case '?':
+          this.print(term.help)
+          break
+        case 'ls': {
+          const target = arg.replace(/\/$/, '')
+          if (!target || target === '.' || target === '~') {
+            this.print([...Object.keys(files), 'stack/'].join('  '))
+          } else if (target === 'stack' || target === '~/stack') {
+            this.print(dirs.map((d) => `${d}/`).join('  '))
+          } else if (dirs.includes(target)) {
+            this.print(panelInfo[target].chips.join('  '))
+          } else {
+            this.print(fmt(term.no_file, 'file', target), 'err')
+          }
+          break
+        }
+        case 'cat': {
+          const name = arg.trim()
+          if (files[name]) files[name].forEach((l) => this.print(l))
+          else this.print(fmt(term.no_file, 'file', name || '?'), 'err')
+          break
+        }
+        case 'cd': {
+          const dir = arg.replace(/^~?\/?stack\//, '').replace(/\/$/, '')
+          if (this.activate(dir)) {
+            this.print(fmt(term.cd_done, 'dir', dir))
+            this.print(panelInfo[dir].description)
+          } else {
+            this.print(fmt(term.cd_missing, 'dir', dir || '?'), 'err')
+          }
+          break
+        }
+        case 'whoami':
+          this.print(term.whoami)
+          break
+        case 'ask': {
+          if (!arg.trim()) {
+            this.print(term.ask_empty, 'err')
+            break
+          }
+          this.print(term.ask_sent)
+          window.dispatchEvent(
+            new CustomEvent('ask-lee:ask', { detail: { question: arg } })
+          )
+          document.getElementById('ai')?.scrollIntoView({ behavior: 'smooth' })
+          break
+        }
+        case 'contact':
+          document
+            .getElementById('contact')
+            ?.scrollIntoView({ behavior: 'smooth' })
+          break
+        case 'open': {
+          const key = arg.trim().toLowerCase().replace(/\s+/g, '-')
+          const hit =
+            this.data.projectIndex[key] ??
+            Object.values(this.data.projectIndex).find((p) =>
+              p.title.toLowerCase().startsWith(key)
+            )
+          if (!hit) {
+            this.print(fmt(term.open_missing, 'name', arg || '?'), 'err')
+            break
+          }
+          this.print(fmt(term.open_done, 'name', hit.title))
+          window.open(hit.url, '_blank', 'noopener')
+          break
+        }
+        case 'theme': {
+          const current = document.documentElement.dataset.theme || 'dark'
+          const next = ['dark', 'light'].includes(arg)
+            ? arg
+            : current === 'dark'
+              ? 'light'
+              : 'dark'
+          document.querySelector<HTMLElement>('[data-theme-toggle]')?.click()
+          if (document.documentElement.dataset.theme !== next)
+            document.querySelector<HTMLElement>('[data-theme-toggle]')?.click()
+          this.print(fmt(term.theme_done, 'theme', next))
+          break
+        }
+        case 'accent': {
+          const a = arg.trim().toLowerCase()
+          if (!ACCENTS.includes(a)) {
+            this.print(term.accent_missing, 'err')
+            break
+          }
+          window.dispatchEvent(new CustomEvent('accent:set', { detail: a }))
+          this.print(fmt(term.accent_done, 'accent', a))
+          break
+        }
+        case 'meow':
+        case 'miau':
+          this.print(term.meow)
+          window.dispatchEvent(new CustomEvent('cats:meow'))
+          break
+        case 'clear':
+          this.out.innerHTML = ''
+          break
+        default:
+          this.print(fmt(term.not_found, 'cmd', cmd), 'err')
+      }
+      this.out.scrollTop = this.out.scrollHeight
     }
   }
 

@@ -19,7 +19,7 @@ const sourceId = variant
   data-resume-actions-root
 >
   <button
-    class={`resume-actions__trigger ${variant === 'hero' ? 'icon-btn w-12 h-12 rounded-[14px] bg-bg-2 border border-line inline-flex items-center justify-center text-ink cursor-pointer' : variant === 'navbar' ? 'pill inline-flex items-center gap-2 px-4 py-[9px] border border-line rounded-full text-[14px] font-medium text-ink' : 'btn-ghost inline-flex items-center gap-[10px] px-[26px] py-[14px] border border-line text-ink rounded-full text-[15px] font-medium hover:border-accent hover:-translate-y-0.5'}`}
+    class={`resume-actions__trigger ${variant === 'hero' ? 'icon-btn w-12 h-12 rounded-[var(--r-md)] bg-bg-2 border border-line inline-flex items-center justify-center text-ink cursor-pointer' : variant === 'navbar' ? 'pill inline-flex items-center gap-2 px-4 py-[9px] border border-line rounded-full text-[14px] font-medium text-ink' : 'btn-ghost inline-flex items-center gap-[10px] px-[26px] py-[14px] border border-line text-ink rounded-full text-[15px] font-medium hover:border-accent hover:-translate-y-0.5'}`}
     id={triggerId}
     type="button"
     aria-haspopup="menu"
@@ -61,7 +61,7 @@ const sourceId = variant
   >
     <ul
       id={menuId}
-      class="resume-actions__menu border-line bg-bg-2 m-0 min-w-[160px] list-none rounded-[12px] border p-[6px]"
+      class="resume-actions__menu border-line bg-bg-2 m-0 min-w-[160px] list-none rounded-[var(--r-sm)] border p-[6px]"
       role="menu"
       hidden
       data-resume-menu
@@ -70,7 +70,7 @@ const sourceId = variant
         <button
           type="button"
           role="menuitem"
-          class="resume-actions__item text-ink block w-full cursor-pointer rounded-[8px] border-0 bg-transparent px-3 py-[10px] text-left font-[inherit] no-underline"
+          class="resume-actions__item text-ink block w-full cursor-pointer rounded-[var(--r-sm)] border-0 bg-transparent px-3 py-[10px] text-left font-[inherit] no-underline"
           data-resume-preview
           data-lang={lang}
           data-source={sourceId}
@@ -82,7 +82,7 @@ const sourceId = variant
       <li role="none">
         <a
           role="menuitem"
-          class="resume-actions__item text-ink block w-full cursor-pointer rounded-[8px] border-0 bg-transparent px-3 py-[10px] text-left font-[inherit] no-underline"
+          class="resume-actions__item text-ink block w-full cursor-pointer rounded-[var(--r-sm)] border-0 bg-transparent px-3 py-[10px] text-left font-[inherit] no-underline"
           href={CV_PATH_BY_LANG[lang]}
         >
           {t('resume_actions').download}

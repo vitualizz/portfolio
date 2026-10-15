@@ -1,12 +1,16 @@
 ---
 import Moon from 'astro-heroicons/outline/Moon.astro'
 import Sun from 'astro-heroicons/outline/Sun.astro'
+import { getLangFromUrl, useTranslation } from 'src/i18n/utils'
+
+const lang = getLangFromUrl(Astro.url)
+const t = useTranslation(lang)
 ---
 
 <theme-toggle>
   <button
     class="border-line bg-bg-2 hover:border-accent inline-flex h-[38px] w-[38px] cursor-pointer items-center justify-center rounded-full border transition-colors"
-    aria-label="Cambiar tema"
+    aria-label={t('nav').toggle_theme}
     data-theme-toggle
     type="button"
   >

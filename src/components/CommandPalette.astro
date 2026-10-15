@@ -1,0 +1,521 @@
+---
+import { useTranslation } from 'src/i18n/utils'
+import { CV_PATH_BY_LANG, SECTION_IDS, withLangPath } from 'src/i18n/constants'
+
+interface Props {
+  lang: 'es' | 'en'
+}
+const { lang } = Astro.props
+const t = useTranslation(lang)
+const p = t('palette')
+const other = lang === 'es' ? 'en' : 'es'
+
+type Cmd = {
+  id: string
+  label: string
+  group: 'go' | 'do'
+  action: string
+  value?: string
+  keywords?: string
+}
+
+const commands: Cmd[] = [
+  {
+    id: 'about',
+    label: p.go_about,
+    group: 'go',
+    action: 'go',
+    value: `#${SECTION_IDS.about}`
+  },
+  {
+    id: 'ai',
+    label: p.go_ai,
+    group: 'go',
+    action: 'go',
+    value: `#${SECTION_IDS.ai}`
+  },
+  {
+    id: 'projects',
+    label: p.go_projects,
+    group: 'go',
+    action: 'go',
+    value: `#${SECTION_IDS.projects}`
+  },
+  {
+    id: 'xp',
+    label: p.go_xp,
+    group: 'go',
+    action: 'go',
+    value: `#${SECTION_IDS.xp}`
+  },
+  {
+    id: 'blog',
+    label: p.go_blog,
+    group: 'go',
+    action: 'href',
+    value: withLangPath(lang, '/blog')
+  },
+  {
+    id: 'contact',
+    label: p.go_contact,
+    group: 'go',
+    action: 'go',
+    value: `#${SECTION_IDS.contact}`
+  },
+  {
+    id: 'theme',
+    label: p.toggle_theme,
+    group: 'do',
+    action: 'theme',
+    keywords: 'dark light tema oscuro claro'
+  },
+  {
+    id: 'accent-yellow',
+    label: p.accent_yellow,
+    group: 'do',
+    action: 'accent',
+    value: 'yellow',
+    keywords: 'color accent acento'
+  },
+  {
+    id: 'accent-coral',
+    label: p.accent_coral,
+    group: 'do',
+    action: 'accent',
+    value: 'coral',
+    keywords: 'color accent acento'
+  },
+  {
+    id: 'accent-mint',
+    label: p.accent_mint,
+    group: 'do',
+    action: 'accent',
+    value: 'mint',
+    keywords: 'color accent acento'
+  },
+  {
+    id: 'accent-violet',
+    label: p.accent_violet,
+    group: 'do',
+    action: 'accent',
+    value: 'violet',
+    keywords: 'color accent acento'
+  },
+  {
+    id: 'lang',
+    label: p.switch_lang,
+    group: 'do',
+    action: 'href',
+    value: withLangPath(other),
+    keywords: 'language idioma english español'
+  },
+  {
+    id: 'cv',
+    label: p.download_cv,
+    group: 'do',
+    action: 'href',
+    value: CV_PATH_BY_LANG[lang],
+    keywords: 'resume cv curriculum pdf'
+  },
+  {
+    id: 'github',
+    label: p.open_github,
+    group: 'do',
+    action: 'external',
+    value: 'https://github.com/vitualizz',
+    keywords: 'code código'
+  },
+  {
+    id: 'linkedin',
+    label: p.open_linkedin,
+    group: 'do',
+    action: 'external',
+    value: 'https://linkedin.com/in/vitualizz',
+    keywords: 'contact contacto'
+  },
+  {
+    id: 'meow',
+    label: p.meow,
+    group: 'do',
+    action: 'meow',
+    keywords: 'cats gatos miau'
+  }
+]
+---
+
+<command-palette
+  data-palette={JSON.stringify({ commands, p, home: withLangPath(lang) })}
+>
+  <dialog class="cp" data-cp-dialog aria-label={p.title}>
+    <form class="cp-panel" data-cp-form>
+      <div class="cp-input-row">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          class="cp-icon"
+          aria-hidden="true"
+          ><path
+            d="M12 2 L13.5 8.5 L20 10 L13.5 11.5 L12 18 L10.5 11.5 L4 10 L10.5 8.5 Z"
+          ></path></svg
+        >
+        <input
+          class="cp-input"
+          type="text"
+          placeholder={p.placeholder}
+          autocomplete="off"
+          spellcheck="false"
+          aria-label={p.title}
+          data-cp-input
+        />
+        <kbd class="cp-kbd">esc</kbd>
+      </div>
+      <div class="cp-list" role="listbox" data-cp-list></div>
+    </form>
+  </dialog>
+</command-palette>
+
+<style is:global>
+  .cp {
+    border: none;
+    padding: 0;
+    background: transparent;
+    width: min(640px, calc(100vw - 32px));
+    margin: 12vh auto 0;
+    color: var(--ink);
+  }
+  .cp::backdrop {
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+  }
+  .cp[open] {
+    animation: modalIn 0.25s cubic-bezier(0.2, 0.7, 0.3, 1) both;
+  }
+  .cp-panel {
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+    border-radius: var(--r-lg);
+    box-shadow: 0 40px 80px rgba(0, 0, 0, 0.5);
+    overflow: hidden;
+  }
+  .cp-input-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--line);
+  }
+  .cp-icon {
+    width: 18px;
+    height: 18px;
+    color: var(--accent);
+    flex-shrink: 0;
+  }
+  .cp-input {
+    flex: 1;
+    min-width: 0;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: var(--ink);
+    font: inherit;
+    font-size: 16px;
+  }
+  .cp-input::placeholder {
+    color: var(--muted);
+  }
+  .cp-kbd {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--muted);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 2px 6px;
+  }
+  .cp-list {
+    max-height: 52vh;
+    overflow-y: auto;
+    padding: 8px;
+  }
+  .cp-group {
+    padding: 10px 10px 4px;
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--muted);
+  }
+  .cp-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 10px 12px;
+    border: none;
+    border-radius: var(--r-sm);
+    background: transparent;
+    color: var(--ink-soft);
+    font: inherit;
+    font-size: 14.5px;
+    text-align: left;
+    cursor: pointer;
+  }
+  .cp-item[aria-selected='true'],
+  .cp-item:hover {
+    background: color-mix(in oklab, var(--accent) 12%, transparent);
+    color: var(--ink);
+  }
+  .cp-item .cp-swatch {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .cp-item .cp-ask {
+    color: var(--accent);
+    font-weight: 600;
+  }
+  .cp-empty {
+    padding: 14px 12px;
+    font-size: 13.5px;
+    color: var(--muted);
+  }
+</style>
+
+<script>
+  type Cmd = {
+    id: string
+    label: string
+    group: 'go' | 'do'
+    action: 'go' | 'href' | 'external' | 'theme' | 'accent' | 'meow'
+    value?: string
+    keywords?: string
+  }
+  type Strings = Record<string, string>
+
+  const SWATCH: Record<string, string> = {
+    yellow: '#f3d463',
+    coral: '#fb6f5c',
+    mint: '#4fd9c2',
+    violet: '#b6a3ff'
+  }
+
+  import { loadMotion } from 'src/scripts/motion'
+
+  class CommandPaletteElement extends HTMLElement {
+    private flip: Awaited<ReturnType<typeof loadMotion>> = null
+    private dialog!: HTMLDialogElement
+    private input!: HTMLInputElement
+    private list!: HTMLElement
+    private commands: Cmd[] = []
+    private p: Strings = {}
+    private home = '/'
+    private items: Array<{ label: string; run: () => void; html: string }> = []
+    private selected = 0
+
+    private onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault()
+        this.dialog.open ? this.close() : this.open()
+      }
+    }
+
+    connectedCallback() {
+      const data = JSON.parse(this.dataset.palette || '{}')
+      this.commands = data.commands ?? []
+      this.p = data.p ?? {}
+      this.home = data.home ?? '/'
+      this.dialog = this.querySelector('[data-cp-dialog]')!
+      this.input = this.querySelector('[data-cp-input]')!
+      this.list = this.querySelector('[data-cp-list]')!
+      const form = this.querySelector<HTMLFormElement>('[data-cp-form]')!
+
+      document.addEventListener('keydown', this.onKey)
+      document
+        .querySelectorAll<HTMLElement>('[data-open-palette]')
+        .forEach((b) => b.addEventListener('click', () => this.open()))
+      this.dialog.addEventListener('click', (e) => {
+        if (e.target === this.dialog) this.close()
+      })
+      this.input.addEventListener('input', () => this.render())
+      this.input.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+          e.preventDefault()
+          const n = this.items.length
+          if (!n) return
+          this.selected =
+            (this.selected + (e.key === 'ArrowDown' ? 1 : n - 1)) % n
+          this.paintSelection()
+        }
+      })
+      form.addEventListener('submit', (e) => {
+        e.preventDefault()
+        this.items[this.selected]?.run()
+      })
+      this.list.addEventListener('click', (e) => {
+        const el = (e.target as HTMLElement).closest<HTMLElement>('[data-idx]')
+        if (el) this.items[Number(el.dataset.idx)]?.run()
+      })
+    }
+
+    disconnectedCallback() {
+      document.removeEventListener('keydown', this.onKey)
+    }
+
+    open() {
+      if (!this.flip) loadMotion().then((m) => (this.flip = m))
+      if (!this.dialog.open) this.dialog.showModal()
+      this.input.value = ''
+      this.render()
+      this.input.focus()
+    }
+    close() {
+      if (this.dialog.open) this.dialog.close()
+    }
+
+    private exec(cmd: Cmd) {
+      this.close()
+      switch (cmd.action) {
+        case 'go': {
+          const target = document.querySelector(cmd.value || '')
+          if (target) target.scrollIntoView({ behavior: 'smooth' })
+          else window.location.href = `${this.home}/${cmd.value || ''}`
+          break
+        }
+        case 'href':
+          window.location.href = cmd.value || '/'
+          break
+        case 'external':
+          window.open(cmd.value, '_blank', 'noopener')
+          break
+        case 'theme':
+          this.querySelectorOwner('[data-theme-toggle]')?.click()
+          break
+        case 'accent':
+          window.dispatchEvent(
+            new CustomEvent('accent:set', { detail: cmd.value })
+          )
+          break
+        case 'meow':
+          window.dispatchEvent(new CustomEvent('cats:meow'))
+          break
+      }
+    }
+
+    private querySelectorOwner(sel: string) {
+      return document.querySelector<HTMLElement>(sel)
+    }
+
+    private ask(question: string) {
+      this.close()
+      const ai = document.getElementById('ai')
+      if (!ai) {
+        window.location.href = `${this.home}/?ask=${encodeURIComponent(question)}#ai`
+        return
+      }
+      window.dispatchEvent(
+        new CustomEvent('ask-lee:ask', { detail: { question } })
+      )
+      ai.scrollIntoView({ behavior: 'smooth' })
+    }
+
+    private esc(s: string) {
+      return s.replace(
+        /[&<>"']/g,
+        (c) =>
+          ({
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#39;'
+          })[c] || c
+      )
+    }
+
+    private render() {
+      const q = this.input.value.trim().toLowerCase()
+      const matches = this.commands.filter((c) => {
+        if (!q) return true
+        const hay = `${c.label} ${c.keywords || ''} ${c.id}`.toLowerCase()
+        return q.split(/\s+/).every((w) => hay.includes(w))
+      })
+      this.items = []
+      let html = ''
+      const groups: Array<['go' | 'do', string]> = [
+        ['go', this.p.group_go],
+        ['do', this.p.group_do]
+      ]
+      for (const [g, title] of groups) {
+        const list = matches.filter((c) => c.group === g)
+        if (!list.length) continue
+        html += `<div class="cp-group">${this.esc(title)}</div>`
+        for (const c of list) {
+          const idx = this.items.length
+          const swatch =
+            c.action === 'accent' && c.value
+              ? `<span class="cp-swatch" style="background:${SWATCH[c.value]}"></span>`
+              : ''
+          html += `<button type="button" class="cp-item" role="option" data-idx="${idx}" data-flip-id="${c.id}">${swatch}<span>${this.esc(c.label)}</span></button>`
+          this.items.push({ label: c.label, run: () => this.exec(c), html: '' })
+        }
+      }
+      if (q) {
+        const idx = this.items.length
+        const looksLikeQuestion = /[?¿]/.test(q) || q.split(/\s+/).length > 2
+        const askHtml = `<div class="cp-group">${this.esc(this.p.group_ask)}</div><button type="button" class="cp-item" role="option" data-idx="${idx}" data-flip-id="ask"><span class="cp-ask">${this.esc(this.p.ask_prefix)}</span><span>${this.esc(this.input.value.trim())}</span></button>`
+        this.items.push({
+          label: q,
+          run: () => this.ask(this.input.value.trim()),
+          html: ''
+        })
+        html = looksLikeQuestion ? askHtml + html : html + askHtml
+        if (looksLikeQuestion) {
+          this.items.unshift(this.items.pop()!)
+          html = html.replace(
+            /data-idx="\d+"/g,
+            (() => {
+              let i = 0
+              return () => `data-idx="${i++}"`
+            })()
+          )
+        }
+      }
+      if (!this.items.length)
+        html = `<div class="cp-empty">${this.esc(this.p.empty)}</div>`
+      const before = this.flip
+        ? this.flip.Flip.getState(this.list.querySelectorAll('[data-flip-id]'))
+        : null
+      this.list.innerHTML = html
+      if (before && this.flip) {
+        this.flip.Flip.from(before, {
+          targets: this.list.querySelectorAll('[data-flip-id]'),
+          duration: 0.22,
+          ease: 'power2.out',
+          onEnter: (els) =>
+            this.flip!.gsap.fromTo(
+              els,
+              { opacity: 0, y: 6 },
+              { opacity: 1, y: 0, duration: 0.2 }
+            )
+        })
+      }
+      this.selected = 0
+      this.paintSelection()
+    }
+
+    private paintSelection() {
+      this.list.querySelectorAll<HTMLElement>('[data-idx]').forEach((el) => {
+        const on = Number(el.dataset.idx) === this.selected
+        el.setAttribute('aria-selected', on ? 'true' : 'false')
+        if (on) el.scrollIntoView({ block: 'nearest' })
+      })
+    }
+  }
+
+  if (!customElements.get('command-palette')) {
+    customElements.define('command-palette', CommandPaletteElement)
+  }
+</script>

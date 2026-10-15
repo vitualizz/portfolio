@@ -35,7 +35,7 @@ const t = useTranslation(lang)
       </h3>
       <button
         type="button"
-        class="border-line bg-bg text-ink min-h-9 min-w-9 cursor-pointer rounded-[10px] border"
+        class="border-line bg-bg text-ink min-h-9 min-w-9 cursor-pointer rounded-[var(--r-sm)] border"
         aria-label={t('resume_actions').preview_modal_close_aria}
         data-resume-close
       >
@@ -68,7 +68,6 @@ const t = useTranslation(lang)
 </style>
 
 <script>
-  // const CV_PATH_BY_LANG = { es: '/cv/es.pdf', en: '/cv/en.pdf' } as const
   const CV_PATH_BY_LANG = {
     es: '/cv/cv_text.pdf',
     en: '/cv/cv_text.pdf'
@@ -94,7 +93,6 @@ const t = useTranslation(lang)
     const focusableSelector =
       'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])'
 
-    // Central unlock routine: every close path must pass here.
     const unlockAndCloseModal = () => {
       modal.hidden = true
       document.body.style.overflow = ''

@@ -14,4 +14,5 @@ export type ChatMessage = { role: 'user' | 'assistant'; content: string }
 export type AgentRequest = {
   messages: ChatMessage[]
   lang?: Lang
+  onRoute?: (decision: RouterDecision) => void
 }
