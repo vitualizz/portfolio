@@ -3,7 +3,13 @@ import { getCollection } from 'astro:content'
 import HomeLayout from 'src/layouts/HomeLayout.astro'
 import { getLangFromUrl, useTranslation } from 'src/i18n/utils.ts'
 import { Image } from 'astro:assets'
-import { BLOG_DATE_LOCALE, withLangPath } from 'src/i18n/constants'
+import { BLOG_DATE_LOCALE, LANG_CODES, withLangPath } from 'src/i18n/constants'
+
+export const prerender = true
+
+export function getStaticPaths() {
+  return LANG_CODES.map((lang) => ({ params: { lang } }))
+}
 
 const lang = getLangFromUrl(Astro.url)
 const t = useTranslation(lang)

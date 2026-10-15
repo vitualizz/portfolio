@@ -1,6 +1,17 @@
 ---
 import BlogPostLayout from 'src/layouts/BlogPostLayout.astro'
 import { getCollection, render } from 'astro:content'
+import { getImage } from 'astro:assets'
+
+export const prerender = true
+
+export async function getStaticPaths() {
+  const posts = await getCollection('blog')
+  return posts.map((post) => {
+    const [slug, lang] = post.slug.split('/')
+    return { params: { lang, slug } }
+  })
+}
 
 const { lang, slug } = Astro.params
 
@@ -10,12 +21,21 @@ const post = pages.find((page) => {
   return pageSlug === slug && pageLang === lang
 })
 
-if (!post) {
-  return Astro.redirect('/404')
-}
+if (!post) throw new Error(`Post not found: ${lang}/${slug}`)
 
 const { Content, headings } = await render(post)
-const { title, shortDescription, author, date, tags, cover } = post.data
+const { title, seoTitle, shortDescription, author, date, tags, cover } =
+  post.data
+
+const ogWidth = Math.min(1200, cover.width)
+const ogImage = await getImage({
+  src: cover,
+  width: ogWidth,
+  height: Math.round((ogWidth * 630) / 1200),
+  fit: 'cover',
+  format: 'jpg',
+  quality: 82
+})
 
 const wordCount = (post.body ?? '').split(/\s+/).filter(Boolean).length
 const readingTime = Math.max(1, Math.ceil(wordCount / 200))
@@ -56,6 +76,10 @@ const morePosts = langPosts
 
 <BlogPostLayout
   title={title}
+  seoTitle={seoTitle}
+  ogImage={ogImage.src}
+  ogImageWidth={ogImage.attributes.width}
+  ogImageHeight={ogImage.attributes.height}
   shortDescription={shortDescription}
   author={author}
   date={date}

@@ -28,7 +28,8 @@ export default defineConfig({
   ],
   output: 'server',
   adapter: vercelServerless({
-    maxDuration: 15
+    maxDuration: 15,
+    imageService: false
   }),
   i18n: {
     defaultLocale: 'es',

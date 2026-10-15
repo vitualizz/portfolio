@@ -27,6 +27,10 @@ interface Heading {
 interface Props {
   headings?: Heading[]
   title: string
+  seoTitle?: string
+  ogImage?: string
+  ogImageWidth?: number
+  ogImageHeight?: number
   shortDescription: string
   author: string
   date: Date
@@ -51,7 +55,11 @@ const {
   prevPost,
   nextPost,
   morePosts = [],
-  headings = []
+  headings = [],
+  seoTitle,
+  ogImage,
+  ogImageWidth,
+  ogImageHeight
 } = Astro.props
 
 const t = useTranslation(lang)
@@ -72,7 +80,16 @@ const shareText = encodeURIComponent(`${title} — por @vitualizz`)
 const twitterUrl = `https://twitter.com/intent/tweet?text=${shareText}&url=${shareUrl}`
 ---
 
-<BaseLayout title={`Lee Palacios - ${title}`} description={shortDescription}>
+<BaseLayout
+  title={`${seoTitle ?? title} | Lee Palacios`}
+  description={shortDescription}
+  ogImage={ogImage}
+  ogImageWidth={ogImageWidth}
+  ogImageHeight={ogImageHeight}
+  ogType="article"
+  publishedTime={date}
+  tags={tags}
+>
   <div
     id="read-progress"
     aria-hidden="true"
