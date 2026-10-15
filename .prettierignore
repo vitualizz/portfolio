@@ -13,3 +13,5 @@ yarn.lock
 *.log
 
 public/cv/
+public/draco/
+public/models/
