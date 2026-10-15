@@ -404,7 +404,8 @@ const tp = t('presentation')
       order: -1;
     }
     .blob-tag {
-      right: 2%;
+      top: 2%;
+      right: 0;
     }
     .hero-character {
       filter: drop-shadow(0 18px 24px rgba(0, 0, 0, 0.35));
@@ -462,7 +463,6 @@ const tp = t('presentation')
   function canRender3D() {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches)
       return false
-    if (!window.matchMedia('(min-width: 821px)').matches) return false
     if (!connectionAllows3D()) return false
     const probe = document.createElement('canvas')
     return !!(probe.getContext('webgl2') || probe.getContext('webgl'))

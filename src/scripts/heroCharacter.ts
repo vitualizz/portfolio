@@ -30,7 +30,8 @@ export async function mountHeroCharacter(
     alpha: true,
     powerPreference: 'low-power'
   })
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+  const coarse = window.matchMedia('(pointer: coarse)').matches
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, coarse ? 1.5 : 2))
   renderer.outputColorSpace = THREE.SRGBColorSpace
   renderer.domElement.className = 'hero-3d-canvas'
   host.appendChild(renderer.domElement)
@@ -114,6 +115,14 @@ export async function mountHeroCharacter(
   }
   window.addEventListener('pointermove', onPointer, { passive: true })
 
+  const onTilt = (e: DeviceOrientationEvent) => {
+    if (e.gamma == null || e.beta == null) return
+    target.x = clamp(e.gamma / 45, -0.5, 0.5)
+    target.y = clamp((e.beta - 45) / 60, -0.5, 0.5)
+  }
+  if (coarse)
+    window.addEventListener('deviceorientation', onTilt, { passive: true })
+
   const resize = () => {
     const { width, height } = host.getBoundingClientRect()
     if (!width || !height) return
@@ -162,6 +171,7 @@ export async function mountHeroCharacter(
     dispose: () => {
       cancelAnimationFrame(frame)
       window.removeEventListener('pointermove', onPointer)
+      window.removeEventListener('deviceorientation', onTilt)
       host.removeEventListener('click', playReaction)
       ro.disconnect()
       io.disconnect()
