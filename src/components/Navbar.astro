@@ -148,6 +148,27 @@ const t = useTranslation(lang)
 
     <ul class="drawer-links">
       <li>
+        <a
+          href={withLangPath(lang, `#${SECTION_IDS.ai}`)}
+          data-mobile-nav
+          class="drawer-ai"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+            ><path
+              d="M12 2 L13.5 8.5 L20 10 L13.5 11.5 L12 18 L10.5 11.5 L4 10 L10.5 8.5 Z"
+            ></path></svg
+          >
+          {t('palette').go_ai}
+        </a>
+      </li>
+      <li>
         <a href={withLangPath(lang, `#${SECTION_IDS.about}`)} data-mobile-nav>
           {t('nav').about_me}
         </a>
@@ -266,10 +287,10 @@ const t = useTranslation(lang)
     display: none;
     flex-direction: column;
     justify-content: center;
-    gap: 5px;
-    width: 38px;
-    height: 38px;
-    padding: 8px;
+    gap: 6px;
+    width: 44px;
+    height: 44px;
+    padding: 10px;
     background: transparent;
     border: 1px solid var(--line);
     border-radius: var(--r-sm);
@@ -294,14 +315,14 @@ const t = useTranslation(lang)
       opacity 0.25s;
   }
   .hamburger[aria-expanded='true'] span:nth-child(1) {
-    transform: translateY(7px) rotate(45deg);
+    transform: translateY(8px) rotate(45deg);
   }
   .hamburger[aria-expanded='true'] span:nth-child(2) {
     opacity: 0;
     transform: scaleX(0);
   }
   .hamburger[aria-expanded='true'] span:nth-child(3) {
-    transform: translateY(-7px) rotate(-45deg);
+    transform: translateY(-8px) rotate(-45deg);
   }
 
   .drawer-overlay {
@@ -363,8 +384,8 @@ const t = useTranslation(lang)
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 34px;
-    height: 34px;
+    width: 44px;
+    height: 44px;
     border: 1px solid var(--line);
     border-radius: var(--r-sm);
     background: transparent;
@@ -399,6 +420,20 @@ const t = useTranslation(lang)
       background 0.15s,
       color 0.15s;
   }
+  .drawer-links .drawer-ai {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--ink);
+    background: color-mix(in oklab, var(--accent) 12%, transparent);
+    border: 1px solid color-mix(in oklab, var(--accent) 35%, var(--line));
+    margin-bottom: 8px;
+  }
+  .drawer-links .drawer-ai svg {
+    width: 16px;
+    height: 16px;
+    color: var(--accent);
+  }
   .drawer-links a:hover,
   .drawer-links a.active {
     background: color-mix(in oklab, var(--accent) 10%, transparent);
@@ -419,10 +454,8 @@ const t = useTranslation(lang)
 
   .drawer-cv-label {
     display: block;
-    font-family: var(--font-mono, monospace);
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
+    font-size: 13px;
+    font-weight: 500;
     color: var(--muted);
     margin-bottom: 8px;
   }
@@ -435,7 +468,7 @@ const t = useTranslation(lang)
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 10px 8px;
+    padding: 12px 8px;
     border: 1px solid var(--line);
     border-radius: var(--r-sm);
     font-size: 13px;
