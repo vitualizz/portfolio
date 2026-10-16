@@ -1,0 +1,205 @@
+---
+title: 'ASDT as a team: the same bar for every change, no matter who asks for it'
+seoTitle: 'ASDT as a team workflow: visible hand-offs, human gates and decisions that outlive the session'
+cover: ./cover.webp
+coverLink: ''
+shortDescription: 'What happens when ASDT stops being a personal tool and becomes a team workflow: one quality bar, visible hand-offs, and decisions that are not lost when the session closes.'
+longDescription: "The first post told how ASDT is built. This one is about what it does for a team: specialists that build on each other's work, explicit points where a person approves, debate as a first-class step, Security as a lens you can call anytime, and a clean repo with knowledge that actually persists."
+author: 'Lee Palacios'
+date: 2026-10-16
+tags: ['AI', 'agents', 'teams', 'workflow', 'LLM']
+lang: 'en'
+---
+
+import Mermaid from '../../../components/blog/Mermaid.astro'
+import Callout from '../../../components/blog/Callout.astro'
+
+# ASDT as a team: the same bar for every change, no matter who asks for it
+
+In the [first post about ASDT](/en/blog/asdt-ai-delivery-team) I told how I built it: specialists, routing, the memory layer. It was an architecture story, told by someone who mostly works alone.
+
+This post goes somewhere else. It's not about how it works inside, but about what happens when **a team** uses it.
+
+Because the problem with using AI as a team isn't that the model is bad. It's that everyone uses it their own way. One person asks for tests, another doesn't. One reviews security, another remembers on Friday. One writes down why they chose an approach, another keeps it in their head and goes on vacation. The result depends more on who opened the chat than on the change itself.
+
+**ASDT doesn't make each person better. It makes everyone go through the same path.**
+
+---
+
+## Before we start: what changed since the first post
+
+The design evolved, so three things are worth clarifying before talking about teams:
+
+- **`/asdt` now coordinates, it doesn't just recommend.** It reads the request, proposes which specialists and in what order, and on your yes runs them one at a time, pausing after each so you can discuss the result before moving on.
+- **The team grew.** Today it's Researcher, PM, UX/UI, Architect, Developer, QA and Security, plus `/asdt-init` for setup.
+- **The repo stays clean.** Working summaries live in the session scratchpad, not in the repo. What's worth remembering goes to memory (more on that below).
+
+Any specialist can be called directly when you only want to discuss one aspect: `/asdt-architect "should we split this module?"`. The coordinator is a help, not a toll booth.
+
+---
+
+## The problem: everyone has their own invisible process
+
+In a team without a shared flow, the process exists, but it lives in each person's head. That brings three concrete problems:
+
+**The quality bar depends on the person.** The edge cases one person considers "obvious" are the ones someone else never thought of. It's not a lack of skill; nobody put them in front of them.
+
+**Knowledge is tribal.** Why library X was dropped, why the endpoint returns 202 and not 201, why that field is nullable. All of that existed in some chat that's already closed.
+
+**Decisions don't outlive the session.** The next person to touch the module has the same discussion from scratch. Sometimes they reach a different conclusion, and nobody finds out there was an earlier one.
+
+ASDT tackles all three with the same idea: a shared path, with visible steps and points where a person decides.
+
+---
+
+## One bar, no matter who asks for the change
+
+When every change goes through the same specialists, the quality floor stops depending on who asked. Every change gets:
+
+- **Numbered acceptance criteria**, defined before any code is written.
+- **States and branches drawn** by UX/UI, not improvised at the end.
+- **A QA that plans the tests against those criteria and edge cases, and gives the verdict**, not against what the developer remembered to test.
+- **A Security lens** available at any point.
+
+The senior engineer and the person who joined last week get the same questions. The difference is in how they answer them, not in whether anyone asked.
+
+---
+
+## Visible hand-offs instead of tribal knowledge
+
+The team idea in ASDT lives in the **hand-off**. Each specialist builds on the previous one's work:
+
+<Mermaid code={`flowchart LR
+  PM["PM\nrequirements"] --> UX["UX/UI\nflows + states"]
+  PM --> AR["Architect\ndesign"]
+  UX --> DEV["Developer\nplan + build"]
+  AR --> DEV
+  DEV --> QA["QA\nplans tests\n+ verdict"]
+  UX -.->|"states and branches"| QA
+  SEC(["Security\njoins at any point"]) -.-> AR
+  SEC -.-> DEV
+  SEC -.-> QA
+
+style SEC fill:#1f2937,stroke:#f59e0b
+style DEV fill:#1f2937,stroke:#10b981`} />
+
+The PM's requirements feed UX and the Architect. The design feeds the Developer. QA plans the tests against the criteria and the states and branches UX drew. Security can join whenever it's needed.
+
+What makes this useful for a team is a formatting detail: **every report opens with what it built on and closes by proposing the next specialist.** If someone picks up the work halfway, they don't have to guess where a decision came from. It's written at the top of the report.
+
+In a human team you'd call that a good handover. The difference is that here it doesn't depend on someone feeling like writing it.
+
+---
+
+## The human decides, at explicit points
+
+There's a way of using agents that scares any tech lead: you give it a request, it goes off, and comes back with 14 changed files. ASDT is designed for the opposite.
+
+The Developer **plans first**. Before touching a file, it presents something like this:
+
+```text
+Scope: add CSV export to the orders list
+Acceptance criteria:
+  1. The button exports only the filtered orders
+  2. Dates in ISO 8601, amounts without currency formatting
+  3. With no filtered orders, the file contains only the headers
+Chosen approach: endpoint that streams the CSV
+Rejected approach: job + file storage (larger than needed today)
+Files: orders_controller.rb, order_csv_exporter.rb, orders/index.html.erb
+Tests: order_csv_exporter_spec.rb, orders_export_request_spec.rb
+```
+
+And it stops there. You approve, adjust or stop it. **No file is written until you say yes.**
+
+After building, it offers the verification commands and runs them only if you accept. If something fails, it gets at most two bounded fix rounds; it doesn't loop forever trying to make the tests pass. And QA never claims a pass on something that wasn't run.
+
+<Callout type="info">
+  **Why it matters for a team.** An explicit gate is also an early review point:
+  the approach and the files are discussed before the code exists, not in a
+  vague PR comment.
+</Callout>
+
+---
+
+## Debate is a step, not an interruption
+
+Because `/asdt` pauses after each specialist, discussing the result isn't leaving the flow: it's part of it.
+
+The Architect proposed a queue and you think it's overkill? You say so right then, the Architect answers, and whatever gets decided is what the Developer receives. If the discussion is about one aspect only, you call that specialist directly and have it there, without starting the whole flow.
+
+For a team this changes something important: **the conclusion of a debate can be saved.** It doesn't stay in one person's chat; it becomes project knowledge for your next session, and for your team if memory is synced.
+
+---
+
+## The smallest change that fully solves it
+
+If you've ever reviewed a PR from someone excited about a new pattern, you know the problem: the change works, but it brings an abstraction nobody asked for.
+
+ASDT works with an explicit ladder: **the smallest change that fully solves the problem.** Not just the smallest (that leaves things half done), and not the most elegant. That's why the Developer's plan shows the chosen approach and the larger one it rejected: the decision not to over-build is in plain sight.
+
+And in review, over-engineering gets flagged as a finding. Not as a style opinion, but as something to resolve.
+
+For a team this is gold, because "this is too much" stops being an argument between people and becomes a shared criterion.
+
+---
+
+## Security as a lens, not a final checkpoint
+
+In many teams, security is the review that comes at the end, when changing anything already hurts. In ASDT, Security is a specialist you call **whenever you want**:
+
+- While the PM defines requirements: "what personal data are we touching?"
+- While the Architect designs: "where are the trust boundaries?"
+- During the build: "review how this input is validated"
+- At the end, as always.
+
+Calling it early is cheap. Calling it late is still possible. What changes is that nobody has to wait for "the security stage" to ask a security question.
+
+---
+
+## Clean repo, knowledge that survives
+
+There's a real tension here. You want the AI's work to leave a trace, but you don't want your repo filled with agent files nobody will read.
+
+ASDT separates the two:
+
+**The ephemeral stays in the session.** Each specialist's working summaries live in the session scratchpad. They serve the hand-off and disappear with it. The repo stays clean.
+
+**The durable goes to memory.** Non-obvious decisions, conclusions from a debate, conventions and lessons learned are saved in an optional memory provider (**Engram** today). Your next session starts with that context; with synced memory, so does your team.
+
+**Project facts are detected once.** `/asdt-init` detects the stack, conventions, test runner and design surface, and writes them to `.asdt/config.yaml`. It's a small, versionable file the whole team shares. Nobody has to tell the AI "we use RSpec" every time.
+
+<Callout type="tip">
+  **The real test of shared memory.** Someone on the team decides today that
+  amounts are stored in cents. A month later, someone else asks for a sales
+  report. If memory is synced, the Architect already knows about the cents
+  without anyone repeating it.
+</Callout>
+
+---
+
+## Agnostic and optional
+
+None of this forces a team to adopt everything at once:
+
+- **Memory is an optional provider.** Without it, ASDT works the same; you only lose context between sessions.
+- **Code intelligence (codegraph) is optional too.** It helps specialists understand the code faster, but it's not required.
+- **Choosing a provider (or none) is an install-time option.**
+- **It runs in Claude Code and OpenCode**, so the whole team doesn't need to use the same tool.
+
+A team can start with `/asdt-init` and a single specialist, and add the rest as it finds value in them.
+
+---
+
+## Closing: what a team gains
+
+**A shared quality floor.** Same criteria, same edge cases, same security lens, no matter who asked for the change.
+
+**Hand-offs you can read.** Every report says where it comes from and where it goes. Picking up someone else's work stops being archaeology.
+
+**Control at clear points.** Nothing is written without an approved plan, nothing is called tested without having run.
+
+**Decisions that survive.** What was discussed and concluded is available to your next session (and to your team, with synced memory), without filling the repo with files.
+
+What I like most about using it this way is that the AI stops being everyone's private assistant and becomes part of the team's process. The same process for everyone.
+
+The code and the specialists are on [GitHub](https://github.com/vitualizz/AI-Software-Delivery-Team). If you want to see how it's built inside, the [first post](/en/blog/asdt-ai-delivery-team) tells that story.
