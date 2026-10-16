@@ -57,8 +57,8 @@ ASDT tackles all three with the same idea: a shared path, with visible steps and
 When every change goes through the same specialists, the quality floor stops depending on who asked. Every change gets:
 
 - **Numbered acceptance criteria**, defined before any code is written.
-- **Edge cases drawn** by UX/UI, not improvised at the end.
-- **A QA that tests against those criteria and edge cases**, not against what the developer remembered to test.
+- **States and branches drawn** by UX/UI, not improvised at the end.
+- **A QA that plans the tests against those criteria and edge cases, and gives the verdict**, not against what the developer remembered to test.
 - **A Security lens** available at any point.
 
 The senior engineer and the person who joined last week get the same questions. The difference is in how they answer them, not in whether anyone asked.
@@ -70,21 +70,20 @@ The senior engineer and the person who joined last week get the same questions. 
 The team idea in ASDT lives in the **hand-off**. Each specialist builds on the previous one's work:
 
 <Mermaid code={`flowchart LR
-  PM["PM\nrequirements"] --> UX["UX/UI\nflows + edge cases"]
+  PM["PM\nrequirements"] --> UX["UX/UI\nflows + states"]
   PM --> AR["Architect\ndesign"]
   UX --> DEV["Developer\nplan + build"]
   AR --> DEV
-  DEV --> QA["QA\ntests against criteria\nand edge cases"]
-  UX -.->|"edge cases"| QA
-  SEC(["Security\njoins at any point"]) -.-> UX
-  SEC -.-> AR
+  DEV --> QA["QA\nplans tests\n+ verdict"]
+  UX -.->|"states and branches"| QA
+  SEC(["Security\njoins at any point"]) -.-> AR
   SEC -.-> DEV
   SEC -.-> QA
 
 style SEC fill:#1f2937,stroke:#f59e0b
 style DEV fill:#1f2937,stroke:#10b981`} />
 
-The PM's requirements feed UX and the Architect. The design feeds the Developer. QA tests against the criteria and the edge cases UX drew. Security can join whenever it's needed.
+The PM's requirements feed UX and the Architect. The design feeds the Developer. QA plans the tests against the criteria and the states and branches UX drew. Security can join whenever it's needed.
 
 What makes this useful for a team is a formatting detail: **every report opens with what it built on and closes by proposing the next specialist.** If someone picks up the work halfway, they don't have to guess where a decision came from. It's written at the top of the report.
 
@@ -115,10 +114,9 @@ And it stops there. You approve, adjust or stop it. **No file is written until y
 After building, it offers the verification commands and runs them only if you accept. If something fails, it gets at most two bounded fix rounds; it doesn't loop forever trying to make the tests pass. And QA never claims a pass on something that wasn't run.
 
 <Callout type="info">
-  **Why it matters for a team.** An explicit gate is also a natural review
-  point. The approved plan is what the PR reviewer compares with the diff. If
-  they don't match, the conversation starts there, not with a vague "why did you
-  change this?" comment.
+  **Why it matters for a team.** An explicit gate is also an early review point:
+  the approach and the files are discussed before the code exists, not in a
+  vague PR comment.
 </Callout>
 
 ---
@@ -166,15 +164,15 @@ ASDT separates the two:
 
 **The ephemeral stays in the session.** Each specialist's working summaries live in the session scratchpad. They serve the hand-off and disappear with it. The repo stays clean.
 
-**The durable goes to memory.** Non-obvious decisions, conclusions from a debate, conventions and lessons learned are saved in an optional memory provider (**Engram** today). The next session, and your teammates on the same repo, start with that context.
+**The durable goes to memory.** Non-obvious decisions, conclusions from a debate, conventions and lessons learned are saved in an optional memory provider (**Engram** today). Your next session starts with that context; with synced memory, so does your team.
 
 **Project facts are detected once.** `/asdt-init` detects the stack, conventions, test runner and design surface, and writes them to `.asdt/config.yaml`. It's a small, versionable file the whole team shares. Nobody has to tell the AI "we use RSpec" every time.
 
 <Callout type="tip">
   **The real test of shared memory.** Someone on the team decides today that
   amounts are stored in cents. A month later, someone else asks for a sales
-  report. The Architect already knows about the cents without anyone repeating
-  it.
+  report. If memory is synced, the Architect already knows about the cents
+  without anyone repeating it.
 </Callout>
 
 ---
@@ -185,7 +183,7 @@ None of this forces a team to adopt everything at once:
 
 - **Memory is an optional provider.** Without it, ASDT works the same; you only lose context between sessions.
 - **Code intelligence (codegraph) is optional too.** It helps specialists understand the code faster, but it's not required.
-- **Swapping or adding a provider is a config change**, not a code change.
+- **Choosing a provider (or none) is an install-time option.**
 - **It runs in Claude Code and OpenCode**, so the whole team doesn't need to use the same tool.
 
 A team can start with `/asdt-init` and a single specialist, and add the rest as it finds value in them.
