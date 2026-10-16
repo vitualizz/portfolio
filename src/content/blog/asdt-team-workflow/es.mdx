@@ -1,0 +1,207 @@
+---
+title: 'ASDT en equipo: el mismo criterio para cada cambio, sin importar quién lo pida'
+seoTitle: 'ASDT como flujo de equipo: hand-offs visibles, gates humanos y decisiones que sobreviven la sesión'
+cover: ./cover.webp
+coverLink: ''
+shortDescription: 'Qué pasa cuando ASDT deja de ser una herramienta personal y se vuelve el flujo de un equipo: un mismo estándar de calidad, hand-offs visibles y decisiones que no se pierden al cerrar la sesión.'
+longDescription: 'El primer post contó cómo está construido ASDT. Este cuenta para qué le sirve a un equipo: especialistas que construyen sobre el trabajo del anterior, puntos explícitos donde una persona aprueba, debate como paso de primera clase, Security como lente que llamas cuando quieras, y un repo limpio con conocimiento que sí persiste.'
+author: 'Lee Palacios'
+date: 2026-10-16
+tags: ['IA', 'agentes', 'equipos', 'workflow', 'LLM']
+lang: 'es'
+---
+
+import Mermaid from '../../../components/blog/Mermaid.astro'
+import Callout from '../../../components/blog/Callout.astro'
+
+# ASDT en equipo: el mismo criterio para cada cambio, sin importar quién lo pida
+
+En el [primer post sobre ASDT](/es/blog/asdt-ai-delivery-team) conté cómo lo construí: especialistas, routing, la capa de memoria. Era una historia de arquitectura, contada desde alguien que trabaja mayormente solo.
+
+Este post va por otro lado. No es cómo funciona por dentro, sino qué pasa cuando lo usa **un equipo**.
+
+Porque el problema de usar IA en equipo no es que el modelo sea malo. Es que cada persona lo usa a su manera. Una pide tests, otra no. Una revisa seguridad, otra se acuerda el viernes. Una deja escrito por qué eligió ese approach, otra lo tiene en la cabeza y se va de vacaciones. El resultado depende más de quién abrió el chat que del cambio en sí.
+
+**ASDT no hace mejor a cada persona. Hace que todas pasen por el mismo camino.**
+
+---
+
+## Antes de seguir: qué cambió desde el primer post
+
+El diseño evolucionó, así que vale aclarar tres cosas antes de hablar de equipos:
+
+- **`/asdt` ahora coordina, no solo recomienda.** Lee el pedido, propone qué especialistas y en qué orden, y si dices que sí los corre uno por uno, pausando después de cada uno para que puedas discutir el resultado antes de seguir.
+- **El equipo creció.** Hoy son Researcher, PM, UX/UI, Architect, Developer, QA y Security, más `/asdt-init` para el setup.
+- **El repo queda limpio.** Los resúmenes de trabajo viven en el scratchpad de la sesión, no en el repo. Lo que vale la pena recordar va a memoria (más abajo explico cómo).
+
+Cualquier especialista se puede llamar directo cuando solo quieres discutir un aspecto: `/asdt-architect "¿conviene separar este módulo?"`. El coordinador es una ayuda, no un peaje.
+
+---
+
+## El problema: cada persona tiene su propio proceso invisible
+
+En un equipo sin un flujo compartido, el proceso existe, pero vive en la cabeza de cada uno. Y eso trae tres problemas concretos:
+
+**El estándar de calidad depende de la persona.** Los edge cases que alguien considera "obvios" son los que otra persona nunca pensó. No es falta de capacidad; es que nadie se los puso enfrente.
+
+**El conocimiento es tribal.** Por qué se descartó la librería X, por qué el endpoint devuelve 202 y no 201, por qué ese campo es nullable. Todo eso existió en algún chat que ya se cerró.
+
+**Las decisiones no sobreviven la sesión.** La próxima persona que toca el módulo vuelve a tener la misma discusión desde cero. A veces llega a otra conclusión, y nadie se entera de que había una anterior.
+
+ASDT ataca los tres con la misma idea: un camino compartido, con pasos visibles y puntos donde una persona decide.
+
+---
+
+## Un mismo estándar, sin importar quién pida el cambio
+
+Cuando todo cambio pasa por los mismos especialistas, el piso de calidad deja de depender de quién lo pidió. Cada cambio tiene:
+
+- **Criterios de aceptación numerados**, definidos antes de escribir código.
+- **Edge cases dibujados** por UX/UI, no improvisados al final.
+- **Un QA que prueba contra esos criterios y esos edge cases**, no contra lo que el developer se acordó de probar.
+- **Una lente de Security** disponible en cualquier punto.
+
+La persona senior y la que entró la semana pasada reciben las mismas preguntas. La diferencia está en cómo las responden, no en si alguien se las hizo.
+
+---
+
+## Hand-offs visibles en lugar de conocimiento tribal
+
+La idea de equipo en ASDT está en el **hand-off**. Cada especialista construye sobre el trabajo del anterior:
+
+<Mermaid code={`flowchart LR
+  PM["PM\nrequirements"] --> UX["UX/UI\nflujos + edge cases"]
+  PM --> AR["Architect\ndiseño"]
+  UX --> DEV["Developer\nplan + build"]
+  AR --> DEV
+  DEV --> QA["QA\nprueba contra criterios\ny edge cases"]
+  UX -.->|"edge cases"| QA
+  SEC(["Security\nentra en cualquier punto"]) -.-> UX
+  SEC -.-> AR
+  SEC -.-> DEV
+  SEC -.-> QA
+
+style SEC fill:#1f2937,stroke:#f59e0b
+style DEV fill:#1f2937,stroke:#10b981`} />
+
+Los requirements del PM alimentan a UX y al Architect. El diseño alimenta al Developer. QA prueba contra los criterios y los edge cases que dibujó UX. Security puede sumarse cuando haga falta.
+
+Lo que hace esto útil en equipo es un detalle de formato: **cada reporte abre diciendo sobre qué construyó y cierra proponiendo el siguiente especialista.** Si alguien retoma el trabajo a mitad de camino, no tiene que adivinar de dónde salió una decisión. Está escrito al principio del reporte.
+
+Es lo que en un equipo humano llamarías un buen handover. La diferencia es que acá no depende de que alguien tenga ganas de escribirlo.
+
+---
+
+## El humano decide, en puntos explícitos
+
+Hay una forma de usar agentes que asusta a cualquier tech lead: le das un pedido, se va, y vuelve con 14 archivos cambiados. ASDT está diseñado para lo contrario.
+
+El Developer **planifica primero**. Antes de tocar un archivo, presenta algo así:
+
+```text
+Scope: agregar exportación CSV al listado de órdenes
+Criterios de aceptación:
+  1. El botón exporta solo las órdenes filtradas
+  2. Fechas en ISO 8601, montos sin formato de moneda
+  3. Sin órdenes filtradas, el archivo trae solo los encabezados
+Approach elegido: endpoint que hace streaming del CSV
+Approach descartado: job + almacenamiento de archivos (más grande de lo necesario hoy)
+Archivos: orders_controller.rb, order_csv_exporter.rb, orders/index.html.erb
+Tests: order_csv_exporter_spec.rb, orders_export_request_spec.rb
+```
+
+Y ahí para. Tú apruebas, ajustas o lo detienes. **No se escribe ningún archivo hasta que digas que sí.**
+
+Después de construir, ofrece los comandos de verificación y los corre solo si aceptas. Si algo falla, tiene como máximo dos rondas de corrección acotadas; no entra en un loop infinito intentando que los tests pasen. Y QA nunca da por aprobado algo que no se corrió.
+
+<Callout type="info">
+  **Por qué importa en equipo.** Un gate explícito es también un punto de
+  revisión natural. El plan aprobado es lo que el reviewer del PR compara con el
+  diff. Si no coinciden, la conversación empieza ahí y no en un comentario vago
+  de "¿por qué cambiaste esto?".
+</Callout>
+
+---
+
+## Debatir es un paso, no una interrupción
+
+Como `/asdt` pausa después de cada especialista, discutir el resultado no es salirse del flujo: es parte de él.
+
+¿El Architect propuso una cola y a ti te parece excesivo? Lo dices en ese momento, el Architect responde, y lo que se decida es lo que recibe el Developer. Si la discusión es solo sobre un aspecto, llamas al especialista directo y la tienes ahí, sin arrancar todo el flujo.
+
+En equipo esto cambia algo importante: **la conclusión de un debate se puede guardar.** No queda en el chat de una persona; queda como conocimiento del proyecto para la próxima que llegue.
+
+---
+
+## Lo más pequeño que resuelve del todo
+
+Si alguna vez revisaste un PR de alguien entusiasmado con un patrón nuevo, conoces el problema: el cambio funciona, pero trae una abstracción que nadie pidió.
+
+ASDT trabaja con una escalera explícita: **el cambio más pequeño que resuelve el problema por completo.** No el más pequeño a secas (eso deja cosas a medias), y no el más elegante. Por eso el plan del Developer muestra el approach elegido y el más grande que descartó: la decisión de no sobre-construir queda a la vista.
+
+Y en la revisión, el sobre-diseño se marca como hallazgo. No como opinión de estilo, sino como algo a resolver.
+
+Para un equipo esto es oro, porque "esto es demasiado" deja de ser una discusión entre personas y pasa a ser un criterio compartido.
+
+---
+
+## Security como lente, no como aduana final
+
+En muchos equipos, seguridad es la revisión que llega al final, cuando cambiar algo ya duele. En ASDT, Security es un especialista que llamas **cuando quieras**:
+
+- Mientras el PM define requirements: "¿qué datos personales estamos tocando?"
+- Mientras el Architect diseña: "¿dónde están los límites de confianza?"
+- Durante el build: "revisa cómo se valida este input"
+- Al final, como siempre.
+
+Llamarlo temprano es barato. Llamarlo tarde sigue siendo posible. Lo que cambia es que nadie tiene que esperar a "la etapa de seguridad" para hacer una pregunta de seguridad.
+
+---
+
+## Repo limpio, conocimiento que sobrevive
+
+Aquí hay una tensión real. Quieres que el trabajo de la IA deje rastro, pero no quieres que tu repo se llene de archivos de agentes que nadie va a leer.
+
+ASDT separa las dos cosas:
+
+**Lo efímero se queda en la sesión.** Los resúmenes de trabajo de cada especialista viven en el scratchpad de la sesión. Sirven para el hand-off y desaparecen con ella. El repo no se ensucia.
+
+**Lo durable va a memoria.** Las decisiones no obvias, las conclusiones de un debate, las convenciones y las lecciones aprendidas se guardan en un proveedor de memoria opcional (hoy **Engram**). La próxima sesión, y tus compañeros en el mismo repo, arrancan con ese contexto.
+
+**Los hechos del proyecto se detectan una vez.** `/asdt-init` detecta el stack, las convenciones, el test runner y la superficie de diseño, y lo deja en `.asdt/config.yaml`. Es un archivo pequeño, versionable, que todo el equipo comparte. Nadie tiene que explicarle a la IA "usamos RSpec" cada vez.
+
+<Callout type="tip">
+  **La prueba real de la memoria compartida.** Alguien del equipo decide hoy que
+  los montos se guardan en centavos. Dentro de un mes, otra persona pide un
+  reporte de ventas. El Architect ya sabe lo de los centavos sin que nadie lo
+  repita.
+</Callout>
+
+---
+
+## Agnóstico y opcional
+
+Nada de esto obliga al equipo a adoptar todo de golpe:
+
+- **La memoria es un proveedor opcional.** Sin él, ASDT funciona igual; solo pierdes el contexto entre sesiones.
+- **La inteligencia de código (codegraph) también es opcional.** Ayuda a los especialistas a entender el código más rápido, pero no es requisito.
+- **Cambiar o sumar un proveedor es un cambio de configuración**, no de código.
+- **Corre en Claude Code y OpenCode**, así que no hace falta que todo el equipo use la misma herramienta.
+
+Un equipo puede empezar con `/asdt-init` y un solo especialista, y sumar el resto cuando le encuentre valor.
+
+---
+
+## Cierre: lo que un equipo gana
+
+**Un piso de calidad común.** Mismos criterios, mismos edge cases, misma lente de seguridad, sin importar quién pidió el cambio.
+
+**Hand-offs que se leen.** Cada reporte dice de dónde viene y a dónde va. Retomar trabajo ajeno deja de ser arqueología.
+
+**Control en puntos claros.** Nada se escribe sin un plan aprobado, nada se da por probado sin haberse corrido.
+
+**Decisiones que sobreviven.** Lo que el equipo discutió y concluyó queda disponible para la próxima persona, sin llenar el repo de archivos.
+
+Lo que más me gusta de usarlo así es que la IA deja de ser el asistente privado de cada uno y pasa a ser parte del proceso del equipo. El mismo proceso para todos.
+
+El código y los especialistas están en [GitHub](https://github.com/vitualizz/AI-Software-Delivery-Team). Si quieres ver cómo está construido por dentro, el [primer post](/es/blog/asdt-ai-delivery-team) cuenta esa historia.
