@@ -1,0 +1,238 @@
+---
+title: 'The model understands, the code decides: the evolution of a WhatsApp sales agent'
+seoTitle: 'From a giant system prompt to a conversational architecture: one owner per decision in a WhatsApp agent'
+cover: ./cover.webp
+coverLink: ''
+shortDescription: 'How a WhatsApp sales agent in production evolved: from a prompt with everything inside to an architecture where the model understands and the code decides. The decisions, why we made them and what we learned.'
+longDescription: 'The design story of a WhatsApp agent that talks to prospective buyers for a real estate developer, told through its decisions and without code: a prompt that grew with every bug, a router that understood and decided at the same time, a server that authorizes what the model proposes, two bugs with the same cause, and a final architecture where every decision has a single owner.'
+author: 'Lee Palacios'
+date: 2026-10-17
+tags: ['AI', 'agents', 'LLM', 'architecture', 'WhatsApp']
+lang: 'en'
+---
+
+import Mermaid from '../../../components/blog/Mermaid.astro'
+import Callout from '../../../components/blog/Callout.astro'
+
+# The model understands, the code decides: the evolution of a WhatsApp sales agent
+
+A prospect writes: **"I want to visit."** They haven't picked a project yet, so there's nothing to schedule. Two messages later, they say which one they like.
+
+Where do you store that they wanted to visit?
+
+If you store it in a variable, you have to decide when it's cleared, who updates it, and what happens when it contradicts what the customer sees in the chat. That question, "is this variable temporary or does it persist?", is the one that has cost me the most in years of building conversational flows. The answer we arrived at was not to store it.
+
+This post tells how we got there. It's the evolution of a WhatsApp sales agent that runs in production, told without code: the **decisions**, why we made them and what we learned. It changed shape many times, but one idea held through all of them:
+
+**Every decision should have a single owner.**
+
+First it was each rule in the prompt. Then each piece of data. Finally, the flow.
+
+---
+
+## The agent
+
+It talks on WhatsApp to people looking for an apartment. It shows them the real estate developer's projects, answers about the one they're interested in (prices, unit types, amenities, brochure and photos), asks qualification questions (what they want it for, how many people will live there, how many bedrooms, what budget), captures their details and takes them to book a visit with a sales agent.
+
+One constraint shapes everything else: on WhatsApp, a sent message can't be edited or taken back. A wrong answer reaches the prospect instantly.
+
+---
+
+## Stage 1: a prompt with everything inside
+
+It started the way almost all of them do: a single agent with the salesperson's identity, the rules and the project data inside the prompt. Over time it gained capabilities: a knowledge base, documents, the brochure, unit-type photos, the qualification questions.
+
+The prompt was rewritten many times, and every bug added a rule. At some point the base prompt reached some sixty lines, with rules that contradicted each other:
+
+- "Never say you don't have it or don't know." But the agent needed to be able to say "that project has no pool".
+- "Greet only once in the conversation." And in another section: "if more than a day has passed, greet again".
+
+The model had to choose between two instructions, and it didn't always choose the one we expected. The problem wasn't the model: the rule and its exception lived in different places, and nobody knew which one won.
+
+The cleanup followed a single criterion: **every rule has a single owner**, a single place where it lives. The greeting exception was written inside the greeting rule. And the "I don't have it" one was solved by separating two things that were mixed up: never talk about what the _agent_ doesn't know, but say plainly what the _project_ doesn't have.
+
+---
+
+## Stage 2: a router and specialized nodes
+
+The first big change was splitting the problem. A cheap classifier reads each message and decides the intent: explore projects, ask about a project, book a visit, say goodbye, hand off to a sales agent, or off topic. Each intent has its own prompt.
+
+<Mermaid code={`flowchart LR
+  M["Message"] --> R["Router\nclassifies the intent"]
+  R --> E["Explore\nsees the project list"]
+  R --> P["Project info\nsees only the sheet\nof THAT project"]
+  R --> V["Visit"]
+  R --> A["Sales agent"]
+  R --> D["Goodbye"]
+
+style R fill:#1f2937,stroke:#f59e0b`} />
+
+The most valuable decision of this stage wasn't the router itself, but that **each node sees only the data it needs**. The exploring node sees the project list. The node that answers about a project sees that project's full sheet and nothing else. Less context, less confusion, and no prices from one project mixed with another project's amenities.
+
+### Why a router and not a state machine
+
+The obvious choice for a conversational flow would have been a state machine, and I ruled it out on purpose. Years ago I suffered through "sticky" state machines: nobody knew which variable was temporary and which one persisted, and the stored state ended up contradicting what the customer saw in the chat.
+
+The router stores nothing. **Every turn is reclassified from the history.**
+
+---
+
+## One owner per piece of data: the model proposes, the server authorizes
+
+With the router running, another decision was taking shape: where it matters, the server is in charge.
+
+- **The project the model names is only a candidate.** The server accepts it only if it's on the agent's project list.
+- **The model names the files, but the server holds the link.** The brochure or a photo can only be sent if it was shown to the model in that same turn.
+- **The server builds the button to book the visit**, not the model.
+
+Writes follow the same idea. Qualification answers and the prospect's details are saved with tools the model decides when to call, with values taken from what the prospect said. The server drops empty and repeated values. And the visit only goes to a sales agent, with the booking button, if there's a phone number on record. If there isn't, the agent asks for it and stays in the visit step.
+
+### The bug that proved it
+
+That rule wasn't always followed. The prompt told the model: "you don't record the project, the system infers it". But the server only overwrote that field in **one** of the nodes. In the others (explore, visit, goodbye), the project the model wrote reached the CRM without anything checking it.
+
+The prompt said one thing and the system did another. There were two owners for the same piece of data, and neither knew about the other. The fix was making the server **always** the only one that writes the project, validated against the list.
+
+### Tell it where it is, instead of asking it to remember
+
+A commit from that time says it almost in these words: tell the model where the lead is, instead of asking it to remember.
+
+Before, the model had to work out from the chat which qualification questions were missing. Now the system hands it, on every turn, the list of pending ones, computed from what's already saved. The model doesn't have to remember anything: it gets the state already computed.
+
+Looking back, that was the seed of everything that came after.
+
+---
+
+## Two pieces deciding the flow
+
+The data had owners now. The flow didn't.
+
+The router did **two jobs at once**: it understood the message and also decided the step. When it decided wrong, the code corrected it with a patch. And the patches piled up into dozens of "if X happens, change the intent to Y".
+
+One bug shows the problem well. The classifier took the project only from the current message. If the prospect had been talking about a project and sent a loose follow-up question, like "and how much is it?", the classifier said "project info", but with no project. And the turn ended up handed off to a sales agent.
+
+<Mermaid code={`flowchart LR
+  H["History:\ntalking about project A"] -.->|"not read"| R
+  M["and how much is it?"] --> R["Classifier\nproject info\n(no project)"]
+  R --> X["Turn handed off\nto a sales agent"]
+
+style R fill:#1f2937,stroke:#f59e0b
+style X fill:#1f2937,stroke:#ef4444`} />
+
+The fix had two parts. The classifier started inheriting the project from the recent history, and if the prospect explicitly names another one, the named one wins. And the code corrected one more case: "project info" without a project becomes "explore", the step whose job is to find that project.
+
+But there was an aggravating factor: the instruction on how to pick the project lived in **two places** that ended up in the same prompt, the classifier's body and the description of its output field. And they could contradict each other. Only one copy was kept.
+
+On top of that, the two hardest rules of the flow lived inside the classifier, mixing understanding with deciding:
+
+- **The prospect who gets stuck.** If in its last three replies in a row the agent sent the prospect to the sales office because it didn't know the answer, and the prospect asks again, they have to be handed off to a sales agent. With nuances: replies are counted, not questions, and the count resets if a useful reply came in between.
+- **"I want to visit" without a project.** It's not a visit yet. The request has to stay open and come back when the prospect picks the project.
+
+<Callout type="warning">
+  **The central lesson.** The problem wasn't having a router, or having loose
+  patches. It was that **two pieces decided the same thing**: the classifier and
+  the code both had an opinion on the step, the prompt and the server on who
+  writes the project, and two copies of one instruction on how to pick it.
+  Whenever two pieces decide the same thing, sooner or later they disagree.
+</Callout>
+
+With that lesson, we put the obvious alternatives on the table. **A single agent with tools, in a loop**, was very flexible but harder to predict, and on WhatsApp a bad reply can't be taken back. **A state machine with stored state, or a graph framework**, brought back the sticky-state pain, and besides, our turn is one decision and one step, not a chain. **Storing state in Redis** created a second source of truth that can contradict the chat.
+
+None of them solved the real problem: giving the flow a single owner.
+
+---
+
+## The final architecture: the model understands, the code decides
+
+The idea is to separate the two jobs the router mixed.
+
+<Mermaid code={`flowchart LR
+  H["Chat\nhistory"] --> X["Extractor\n(cheap model)\nfacts only"]
+  X --> T["Rules table\n(code)\npicks the step"]
+  C["System\nprojects, prospect\ndetails"] --> T
+  T --> P["Current step\nthe model talks\nfreely"]
+
+style X fill:#1f2937,stroke:#f59e0b
+style T fill:#1f2937,stroke:#10b981`} />
+
+**The model extracts facts, it doesn't decide.** The classifier stops choosing the step. It now extracts three facts: which project the prospect is talking about, whether they want the visit, and whether there's a signal that leaves the flow (a serious complaint, demands a person, a request from someone who already bought, got stuck, a goodbye, spam). It doesn't know the flow.
+
+**A table of seven rules picks the step**, in one place and in a fixed order. The first one that matches wins:
+
+1. Spam.
+2. Signals that hand off to a sales agent.
+3. Visit with a project chosen.
+4. Visit without a project: pick one first.
+5. Goodbye.
+6. Project info.
+7. Exploration.
+
+**Inside each step, the model talks freely.** The code doesn't tell it which words to use. It tells it where in the conversation it is.
+
+The "and how much is it?" patch stopped being a stray "if" in the code: it's now part of the table. Without a project, the info row doesn't match and the turn falls through to exploration.
+
+### The hard rules stop being logic
+
+The two rules that cost the most dissolve too:
+
+**The stuck prospect becomes a fact.** The extractor flags it as one more signal, and the table treats it like any other signal that hands off to a sales agent.
+
+**The pending visit isn't stored: it's read again.** This is the case from the opening. When the prospect said "I want to visit" without a project, no flag is stored. On every turn, the extractor reads the conversation again. When the prospect picks the project, the extractor sees they had already asked for the visit and are now just choosing, and the table takes them to the visit step.
+
+That's the answer to the original pain. The question "is this variable temporary or does it persist?" goes away because **there is no variable**. The intent to visit doesn't live anywhere: it's derived from the conversation every time it's needed.
+
+Look closely and it's still a state machine. The difference is that its state is computed on every turn instead of maintained. It's the same idea as the pending qualification questions, taken to the whole flow: the state is computed and handed to the model, not something the model is asked to remember.
+
+### What didn't change
+
+It's worth being honest about the scope. This architecture lives in a branch that hasn't been merged yet. And the service is still large: the phone gate, the files and the write tools are all still there.
+
+What got simpler is **where the flow is decided**, not the whole agent. Before, the flow was decided in the classifier and in dozens of patches around it. Now it's decided in a seven-row table.
+
+---
+
+## How we validate it and what it costs
+
+The separation changes how you test. **The table is tested like any function:** each row and its order of precedence, with facts in and the expected step out, no model involved.
+
+The extractor is another story. It has no automated evaluation: we validate it by reviewing real traces. We have synthetic test conversations, but they run against a fake model, so they test the wiring, not the real model.
+
+Cost-wise, the change is neutral: before there was one cheap call to classify and one to reply; now there's one cheap call to extract, with the same low-cost model, and the same reply call. History is truncated, not summarized: the extractor sees the latest messages of the conversation and the replying node a longer window. We don't have measured latency or cost numbers yet.
+
+The risk moves. If the extractor reads a fact wrong, the table makes a correct decision on bad data. That's why observability is part of the design.
+
+---
+
+## Observability
+
+Every turn leaves a trace with two internal steps: extracting the facts and running the step. The turn's output summarizes **what the table saw**: the project the model read, the one left after validating it, how many projects there are, the signal, whether they want the visit and the reason for the chosen step.
+
+It also carries labels in Spanish (step, signal, handed off), so the business team can filter and understand why a prospect went to a sales agent without asking us to translate.
+
+When something goes wrong, the question is no longer "what was the model thinking?". It's "which fact did it extract wrong?" or "which rule is missing from the table?".
+
+---
+
+## It's not just our idea
+
+While redesigning, we found others reaching similar conclusions. These are vendor docs and practitioner posts, not independent studies, but the overlap says something:
+
+- **Rasa CALM** separates an LLM that interprets the conversation and emits commands from [deterministic flows](https://rasa.com/docs/pro/build/writing-flows) that hold the business logic ([docs](https://rasa.com/docs/rasa-pro/calm), [command generator](https://learning.rasa.com/rasa-pro/dialogue-understanding)).
+- **IBM** flags as an [anti-pattern](https://developer.watson-orchestrate.ibm.com/agents/agent_design/foundational_architecture.md) letting the LLM remember what was already done just by reading the history. It's what the qualification questions taught us: what's already saved, the system tells the model. The pending visit doesn't clash with this: it isn't something the system did, it's something the prospect said, and that does live in the conversation.
+- **Salesforce** [moved its sales qualification agent](https://www.salesforce.com/blog/architect-deterministic-conversational-flows-agent-script/) from a probabilistic approach to a deterministic one with managed state.
+- **Parlant** loads only the [relevant rules](https://parlant.io/docs/concepts/customization/guidelines) on each turn, instead of a prompt with all of them, and models flows as [journeys](https://parlant.io/docs/concepts/customization/journeys).
+- **Anthropic**, in [Building effective agents](https://www.anthropic.com/research/building-effective-agents), recommends finding the simplest solution that works and preferring predictable workflows over autonomous agents when the task is well defined.
+
+Each solves it its own way, but the direction is the same: the model for language, the code for what has to be predictable. When Salesforce talks about managed state, it doesn't contradict "don't store state": the state is still explicit, we just compute it instead of storing it.
+
+---
+
+## Closing
+
+Looking at the whole evolution, what held wasn't an architecture. It was a question: **who owns this decision?**
+
+First we asked it of each rule in the prompt, and each one ended up living in a single place. Then of each piece of data: the model proposes a project or a file, and the server authorizes. Finally, of the flow: the model understands and the table decides. And along the way, state stopped being stored: it's computed and handed to the model on every turn.
+
+You don't have to choose between "the model decides everything" and "the code decides everything". **The model does what only a model can do:** understand language and hold a conversation. **The code does what has to be predictable:** pick the step, authorize the data and write to the system.
+
+No piece came out of a diagram; each one came from a concrete problem. If today you have a prompt that contradicts itself or a router full of patches, don't start with the framework. Start by asking, for every decision, **who owns it.**

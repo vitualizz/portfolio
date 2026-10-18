@@ -1,0 +1,238 @@
+---
+title: 'El modelo entiende, el código decide: la evolución de un agente de ventas en WhatsApp'
+seoTitle: 'De un system prompt gigante a una arquitectura conversacional: un solo dueño por cada decisión en un agente de WhatsApp'
+cover: ./cover.webp
+coverLink: ''
+shortDescription: 'Cómo evolucionó un agente de ventas de WhatsApp en producción: de un prompt con todo adentro a una arquitectura donde el modelo entiende y el código decide. Las decisiones, por qué se tomaron y qué aprendimos.'
+longDescription: 'La historia de diseño de un agente de WhatsApp que atiende prospectos de una inmobiliaria, contada desde las decisiones y sin código: un prompt que crecía con cada bug, un router que entendía y decidía a la vez, un servidor que autoriza lo que el modelo propone, dos bugs con la misma causa y una arquitectura final donde cada decisión tiene un solo dueño.'
+author: 'Lee Palacios'
+date: 2026-10-17
+tags: ['IA', 'agentes', 'LLM', 'arquitectura', 'WhatsApp']
+lang: 'es'
+---
+
+import Mermaid from '../../../components/blog/Mermaid.astro'
+import Callout from '../../../components/blog/Callout.astro'
+
+# El modelo entiende, el código decide: la evolución de un agente de ventas en WhatsApp
+
+Un prospecto escribe: **"Quiero visitar."** Todavía no eligió proyecto, así que no hay nada que agendar. Dos mensajes después, dice cuál le interesa.
+
+¿Dónde guardas que quería visitar?
+
+Si lo guardas en una variable, tienes que decidir cuándo se borra, quién la actualiza y qué pasa si contradice lo que el cliente ve en el chat. Esa pregunta, "¿esta variable es temporal o persiste?", es la que más me ha costado en años de construir flujos conversacionales. La respuesta a la que llegamos fue no guardarla.
+
+Este post cuenta cómo llegamos ahí. Es la evolución de un agente de ventas de WhatsApp que está en producción, contada sin código: las **decisiones**, por qué las tomamos y qué aprendimos. Cambió muchas veces de forma, pero una idea se mantuvo en todas:
+
+**Cada decisión debe tener un solo dueño.**
+
+Primero fue cada regla del prompt. Después, cada dato. Al final, el flujo.
+
+---
+
+## El agente
+
+Atiende por WhatsApp a personas que buscan departamento. Les muestra los proyectos de la inmobiliaria, responde sobre el que les interesa (precios, tipologías, áreas comunes, brochure y fotos), hace preguntas de calificación (para qué lo quiere, cuántas personas viven, cuántos dormitorios, qué presupuesto tiene), captura sus datos y lo lleva a agendar una visita con un asesor.
+
+Hay una restricción que condiciona todo lo demás: en WhatsApp, un mensaje enviado no se edita ni se deshace. Una respuesta equivocada le llega al prospecto al instante.
+
+---
+
+## Etapa 1: un prompt con todo adentro
+
+Empezó como empiezan casi todos: un solo agente con la identidad del vendedor, las reglas y los datos de los proyectos dentro del prompt. Con el tiempo se le sumaron capacidades: una base de conocimiento, documentos, el brochure, fotos de tipologías, las preguntas de calificación.
+
+El prompt se reescribió muchas veces, y cada bug agregaba una regla. En algún momento, el prompt base llegó a unas sesenta líneas, con reglas que se contradecían:
+
+- "Nunca digas que no lo tienes o no lo sabes." Pero el agente necesitaba poder decir "ese proyecto no tiene piscina".
+- "Saluda una sola vez en la conversación." Y en otra sección: "si pasó más de un día, vuelve a saludar".
+
+El modelo tenía que elegir entre dos instrucciones, y no siempre elegía la que esperábamos. El problema no era el modelo: la regla y su excepción vivían en lugares distintos, y nadie sabía cuál mandaba.
+
+La limpieza se hizo con un solo criterio: **cada regla tiene un solo dueño**, un solo lugar donde vive. La excepción del saludo se escribió dentro de la regla del saludo. Y la de "no lo tengo" se resolvió separando dos cosas que estaban mezcladas: nunca hablar de lo que el _agente_ no sabe, pero sí decir directo lo que el _proyecto_ no tiene.
+
+---
+
+## Etapa 2: un router y nodos especializados
+
+El primer gran cambio fue partir el problema. Un clasificador barato lee cada mensaje y decide la intención: explorar proyectos, pedir info de un proyecto, agendar una visita, despedirse, pasar a un asesor o fuera de tema. Cada intención tiene su propio prompt.
+
+<Mermaid code={`flowchart LR
+  M["Mensaje"] --> R["Router\nclasifica la intención"]
+  R --> E["Explorar\nve la lista de proyectos"]
+  R --> P["Info de proyecto\nve solo la ficha\nde ESE proyecto"]
+  R --> V["Visita"]
+  R --> A["Asesor"]
+  R --> D["Despedida"]
+
+style R fill:#1f2937,stroke:#f59e0b`} />
+
+La decisión más valiosa de esta etapa no fue el router en sí, sino que **cada nodo ve solo los datos que necesita**. El que explora ve la lista de proyectos. El que responde sobre un proyecto ve la ficha completa de ese proyecto y nada más. Menos contexto, menos confusión, y nada de precios de un proyecto mezclados con las áreas comunes de otro.
+
+### Por qué router y no una máquina de estados
+
+Lo obvio para un flujo conversacional habría sido una máquina de estados, y la descarté a propósito. Años atrás sufrí con máquinas de estados "pegadas": no se sabía qué variable era temporal y cuál persistía, y el estado guardado terminaba contradiciendo lo que el cliente veía en el chat.
+
+El router no guarda nada. **Cada turno se reclasifica desde el historial.**
+
+---
+
+## Un dueño por dato: el modelo propone, el servidor autoriza
+
+Con el router en marcha, otra decisión fue tomando forma: en lo que importa, el servidor manda.
+
+- **El proyecto que nombra el modelo es solo un candidato.** El servidor lo acepta únicamente si está en la lista de proyectos del agente.
+- **Los archivos los nombra el modelo, pero el enlace lo guarda el servidor.** El brochure o una foto solo se pueden enviar si se le mostraron al modelo en ese mismo turno.
+- **El botón para agendar la visita lo arma el servidor**, no el modelo.
+
+Las escrituras siguen la misma idea. Las respuestas de calificación y los datos del prospecto se guardan con herramientas que el modelo decide cuándo llamar, con valores que salen de lo que dijo el prospecto. El servidor descarta lo vacío y lo repetido. Y la visita solo pasa a un asesor, con el botón de agendar, si hay un teléfono registrado. Si no lo hay, el agente lo pide y sigue en el paso de visita.
+
+### El bug que lo confirmó
+
+Esta regla no siempre se cumplió. El prompt le decía al modelo: "el proyecto no lo registras tú, lo infiere el sistema". Pero el servidor solo reemplazaba ese campo en **uno** de los nodos. En los demás (explorar, visita, despedida), el proyecto que escribía el modelo llegaba al CRM sin que nada lo revisara.
+
+El prompt decía una cosa y el sistema hacía otra. Había dos dueños para el mismo dato, y ninguno sabía del otro. El arreglo fue que el servidor sea **siempre** el único que escribe el proyecto, validado contra la lista.
+
+### Decirle dónde está, en vez de pedirle que recuerde
+
+Un commit de esa época lo dice casi con estas palabras: hay que decirle al modelo dónde está el lead, en vez de pedirle que lo recuerde.
+
+Antes, el modelo tenía que deducir del chat qué preguntas de calificación faltaban. Ahora el sistema le pasa en cada turno la lista de las pendientes, calculada con lo que ya está guardado. El modelo no tiene que acordarse de nada: recibe el estado ya calculado.
+
+Mirando hacia atrás, esa fue la semilla de todo lo que vino después.
+
+---
+
+## Dos piezas decidiendo el flujo
+
+Los datos ya tenían dueño. El flujo, no.
+
+El router hacía **dos trabajos a la vez**: entendía el mensaje y además decidía el paso. Cuando decidía mal, el código lo corregía con un parche. Y los parches se acumularon hasta llegar a decenas de "si pasa X, cambia la intención a Y".
+
+Un bug muestra bien el problema. El clasificador sacaba el proyecto solo del mensaje actual. Si el prospecto ya venía hablando de un proyecto y mandaba una pregunta suelta de seguimiento, del tipo "¿y cuánto cuesta?", el clasificador decía "info de proyecto", pero sin proyecto. Y el turno terminaba derivado a un asesor.
+
+<Mermaid code={`flowchart LR
+  H["Historial:\nhablaba del proyecto A"] -.->|"no lo mira"| R
+  M["¿y cuánto cuesta?"] --> R["Clasificador\ninfo de proyecto\n(sin proyecto)"]
+  R --> X["Turno derivado\na un asesor"]
+
+style R fill:#1f2937,stroke:#f59e0b
+style X fill:#1f2937,stroke:#ef4444`} />
+
+El arreglo tuvo dos partes. El clasificador pasó a heredar el proyecto del historial reciente, y si el prospecto nombra otro explícitamente, manda el nombrado. Y el código corrigió un caso más: "info de proyecto" sin proyecto pasa a "explorar", que es el paso cuyo trabajo es encontrar ese proyecto.
+
+Pero hubo un agravante: la instrucción de cómo elegir el proyecto vivía en **dos lugares** que terminaban en el mismo prompt, el cuerpo del clasificador y la descripción de su campo de salida. Y podían contradecirse. Se dejó una sola copia.
+
+Además, las dos reglas más difíciles del flujo vivían dentro del clasificador, mezclando entender con decidir:
+
+- **El prospecto que se queda trabado.** Si en sus tres últimas respuestas seguidas el agente lo mandó a la sala de ventas porque no sabía la respuesta, y el prospecto vuelve a preguntar, hay que pasarlo a un asesor. Con matices: se cuentan respuestas, no preguntas, y la cuenta se reinicia si en medio hubo una respuesta útil.
+- **"Quiero visitar" sin proyecto.** Todavía no es una visita. El pedido tiene que quedar en pie y volver cuando el prospecto elija el proyecto.
+
+<Callout type="warning">
+  **La lección central.** El problema no era tener router, ni tener parches
+  sueltos. Era que **dos piezas decidían lo mismo**: el clasificador y el código
+  opinaban sobre el paso, el prompt y el servidor sobre quién escribe el
+  proyecto, y dos copias de una instrucción sobre cómo elegirlo. Cada vez que
+  dos piezas deciden lo mismo, tarde o temprano discrepan.
+</Callout>
+
+Con esa lección, pusimos sobre la mesa las alternativas obvias. **Un agente único con herramientas, en loop**, era muy flexible pero más difícil de predecir, y en WhatsApp una mala respuesta no se deshace. **Una máquina de estados con estado guardado, o un framework de grafos**, traía de vuelta el dolor del estado pegado, y además nuestro turno es una decisión y un paso, no una cadena. **Guardar el estado en Redis** creaba una segunda fuente de verdad que puede contradecir el chat.
+
+Ninguna resolvía el problema real: que el flujo tuviera un solo dueño.
+
+---
+
+## La arquitectura final: el modelo entiende, el código decide
+
+La idea es separar los dos trabajos que el router mezclaba.
+
+<Mermaid code={`flowchart LR
+  H["Historial\ndel chat"] --> X["Extractor\n(modelo barato)\nsolo hechos"]
+  X --> T["Tabla de reglas\n(código)\nelige el paso"]
+  C["Sistema\nproyectos, datos\ndel prospecto"] --> T
+  T --> P["Paso actual\nel modelo conversa\ncon libertad"]
+
+style X fill:#1f2937,stroke:#f59e0b
+style T fill:#1f2937,stroke:#10b981`} />
+
+**El modelo extrae hechos, no decide.** El clasificador deja de elegir el paso. Ahora extrae tres hechos: de qué proyecto habla el prospecto, si quiere la visita, y si hay una señal que se sale del flujo (un reclamo serio, exige una persona, un trámite de alguien que ya compró, se quedó trabado, una despedida, spam). No conoce el flujo.
+
+**Una tabla de siete reglas decide el paso**, en un solo lugar y con un orden fijo. Gana la primera que se cumple:
+
+1. Spam.
+2. Señales que pasan a un asesor.
+3. Visita con proyecto elegido.
+4. Visita sin proyecto: primero que elija.
+5. Despedida.
+6. Info del proyecto.
+7. Exploración.
+
+**Dentro de cada paso, el modelo conversa con libertad.** El código no le dice qué palabras usar. Le dice en qué parte de la conversación está.
+
+El parche del "¿y cuánto cuesta?" dejó de ser un "si" perdido en el código: ahora es parte de la tabla. Sin proyecto, la fila de info no se cumple y el turno cae en exploración.
+
+### Las reglas difíciles dejan de ser lógica
+
+Las dos reglas que más costaban también se disuelven:
+
+**El prospecto trabado pasa a ser un hecho.** El extractor lo marca como una señal más, y la tabla lo trata como cualquier otra señal que pasa a un asesor.
+
+**La visita pendiente no se guarda: se vuelve a leer.** Este es el caso del principio. Cuando el prospecto dijo "quiero visitar" sin proyecto, no se guarda ninguna bandera. En cada turno, el extractor vuelve a leer la conversación. Cuando el prospecto elige el proyecto, el extractor ve que ya había pedido la visita y que ahora solo está eligiendo, y la tabla lo lleva al paso de visita.
+
+Es la respuesta al dolor original. La pregunta "¿esta variable es temporal o persiste?" desaparece porque **no hay variable**. La intención de visitar no vive en ningún lado: se deduce de la conversación cada vez que hace falta.
+
+Si lo miras de cerca, sigue siendo una máquina de estados. La diferencia es que su estado se calcula en cada turno en vez de mantenerse. Es la misma idea de las preguntas de calificación pendientes, llevada al flujo completo: el estado se calcula y se le entrega al modelo, no se le pide que lo recuerde.
+
+### Lo que no cambió
+
+Vale ser honesto con el alcance. Esta arquitectura está en una rama que todavía no se fusionó. Y el servicio sigue siendo grande: siguen ahí la compuerta del teléfono, los archivos y las herramientas de escritura.
+
+Lo que se simplificó es **dónde se decide el flujo**, no todo el agente. Antes, el flujo se decidía en el clasificador y en decenas de parches alrededor. Ahora se decide en una tabla de siete filas.
+
+---
+
+## Cómo lo validamos y lo que cuesta
+
+La separación cambia cómo se prueba. **La tabla se prueba como cualquier función:** cada fila y su orden de precedencia, con hechos de entrada y paso esperado, sin modelo de por medio.
+
+El extractor es otra historia. No tiene una evaluación automática: lo validamos revisando traces reales. Tenemos conversaciones sintéticas de prueba, pero corren con un modelo falso, así que prueban el cableado, no al modelo real.
+
+En costo, el cambio es neutro: antes había una llamada barata para clasificar y una para responder; ahora hay una llamada barata para extraer, con el mismo modelo económico, y la misma de respuesta. El historial se trunca, no se resume: el extractor ve los últimos mensajes de la conversación y el nodo que responde, una ventana más larga. Todavía no tenemos cifras medidas de latencia ni de costo.
+
+El riesgo se mueve de lugar. Si el extractor lee mal un hecho, la tabla decide bien sobre un dato malo. Por eso la observabilidad es parte del diseño.
+
+---
+
+## Observabilidad
+
+Cada turno deja un trace con dos pasos internos: extraer los hechos y ejecutar el paso. La salida del turno resume **lo que vio la tabla**: el proyecto que leyó el modelo, el que quedó después de validarlo, cuántos proyectos hay, la señal, si quiere la visita y el motivo del paso elegido.
+
+Lleva además etiquetas en español (paso, señal, derivado), para que el equipo de negocio pueda filtrar y entender por qué un prospecto pasó a un asesor sin pedirnos que se lo traduzcamos.
+
+Cuando algo sale mal, la pregunta ya no es "¿qué estaba pensando el modelo?". Es "¿qué hecho extrajo mal?" o "¿qué regla falta en la tabla?".
+
+---
+
+## No es solo una idea nuestra
+
+Mientras rediseñábamos, encontramos que otros están llegando a conclusiones parecidas. Son documentación de proveedores y posts de practicantes, no estudios independientes, pero la coincidencia dice algo:
+
+- **Rasa CALM** separa un LLM que interpreta la conversación y emite comandos, de [flujos deterministas](https://rasa.com/docs/pro/build/writing-flows) que contienen la lógica de negocio ([docs](https://rasa.com/docs/rasa-pro/calm), [command generator](https://learning.rasa.com/rasa-pro/dialogue-understanding)).
+- **IBM** marca como [anti-patrón](https://developer.watson-orchestrate.ibm.com/agents/agent_design/foundational_architecture.md) que el LLM recuerde lo que ya se hizo solo leyendo el historial. Es lo mismo que nos enseñaron las preguntas de calificación: lo que ya se guardó, el sistema se lo dice al modelo. La visita pendiente no choca con esto: no es algo que el sistema hizo, es algo que el prospecto dijo, y eso sí vive en la conversación.
+- **Salesforce** [migró su agente de calificación de ventas](https://www.salesforce.com/blog/architect-deterministic-conversational-flows-agent-script/) de un enfoque probabilístico a uno determinista con estado manejado.
+- **Parlant** carga en cada turno solo las [reglas relevantes](https://parlant.io/docs/concepts/customization/guidelines), en vez de un prompt con todas, y modela los flujos como [journeys](https://parlant.io/docs/concepts/customization/journeys).
+- **Anthropic**, en [Building effective agents](https://www.anthropic.com/research/building-effective-agents), recomienda buscar la solución más simple que funcione y preferir workflows predecibles antes que agentes autónomos cuando la tarea está bien definida.
+
+Cada uno lo resuelve a su manera, pero la dirección es la misma: el modelo para el lenguaje, el código para lo que tiene que ser predecible. Cuando Salesforce habla de estado manejado, no contradice lo de "no guardar estado": el estado sigue siendo explícito, solo que nosotros lo calculamos en vez de almacenarlo.
+
+---
+
+## Cierre
+
+Mirando la evolución completa, lo que se mantuvo no fue una arquitectura. Fue una pregunta: **¿quién es el dueño de esta decisión?**
+
+Primero se la hicimos a cada regla del prompt, y cada una terminó viviendo en un solo lugar. Después a cada dato: el modelo propone un proyecto o un archivo, y el servidor autoriza. Al final, al flujo: el modelo entiende y la tabla decide. Y en el camino, el estado dejó de guardarse: se calcula y se le entrega al modelo en cada turno.
+
+No hay que elegir entre "el modelo decide todo" y "el código decide todo". **El modelo hace lo que solo un modelo puede hacer:** entender lenguaje y conversar. **El código hace lo que tiene que ser predecible:** decidir el paso, autorizar los datos y escribir en el sistema.
+
+Ninguna pieza salió de un diagrama; cada una vino de un problema concreto. Si hoy tienes un prompt que se contradice o un router lleno de parches, no empieces por el framework. Empieza por preguntarte, para cada decisión, **quién es su dueño.**
