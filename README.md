@@ -97,7 +97,7 @@ pnpm blog:cover <slug>           # writes src/content/blog/<slug>/cover.webp
 pnpm blog:cover <slug> --force   # overwrite existing cover.webp
 ```
 
-Pipeline details: `src/ai/cover-generation/README.md`.
+`gpt-4o` writes an image prompt from the post (title, summary, tags, `##` headings) and `gpt-image-1` renders it as an editorial cover with a short headline, cropped to 1200×630 WebP. The art direction lives in `ART_DIRECTOR` inside `src/scripts/generate-blog-cover.ts`.
 
 Frontmatter schema (from `src/content/config.ts`):
 
