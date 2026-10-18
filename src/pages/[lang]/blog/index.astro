@@ -161,16 +161,13 @@ function getReadingTime(body: string): number {
               data-title={post.data.title.toLowerCase()}
               data-excerpt={(post.data.shortDescription || '').toLowerCase()}
             >
-              <div class:list={['bp-cover', isFeatured && 'bp-cover-featured']}>
-                {isFeatured && (
-                  <span class="bp-pin">{tBlog.featured_label}</span>
-                )}
+              <div class="bp-cover">
                 {post.data.cover && (
                   <Image
                     src={post.data.cover}
                     alt=""
                     width={isFeatured ? 1200 : 800}
-                    height={isFeatured ? 630 : 450}
+                    height={isFeatured ? 630 : 420}
                     loading={i === 0 ? 'eager' : 'lazy'}
                     class="bp-cover-img h-full w-full object-cover"
                   />
@@ -179,6 +176,9 @@ function getReadingTime(body: string): number {
 
               <div class="flex flex-1 flex-col px-6 pt-[22px] pb-6">
                 <div class="text-muted-custom mb-3.5 flex flex-wrap items-center gap-2.5 text-[12.5px] font-medium">
+                  {isFeatured && (
+                    <span class="bp-pin">{tBlog.featured_label}</span>
+                  )}
                   {tag && (
                     <span class="text-accent rounded-full border border-[color-mix(in_oklab,var(--accent)_35%,var(--line))] bg-[color-mix(in_oklab,var(--accent)_8%,transparent)] px-2.5 py-[3px] font-semibold">
                       {formatTag(tag)}
@@ -462,16 +462,10 @@ function getReadingTime(body: string): number {
     );
     border-color: color-mix(in oklab, var(--accent) 30%, var(--line));
   }
-  @media (min-width: 640px) {
-    .bp-featured {
-      display: grid;
-      grid-template-columns: 1.1fr 1fr;
-    }
-  }
 
   .bp-cover {
     position: relative;
-    aspect-ratio: 16 / 9;
+    aspect-ratio: 1200 / 630;
     overflow: hidden;
     background: var(--bg-3);
     flex-shrink: 0;
@@ -489,32 +483,15 @@ function getReadingTime(body: string): number {
     inset: 0;
     background: linear-gradient(
       180deg,
-      transparent 60%,
-      color-mix(in oklab, var(--bg) 90%, transparent)
+      transparent 78%,
+      color-mix(in oklab, var(--bg) 55%, transparent)
     );
     pointer-events: none;
     z-index: 1;
   }
 
-  .bp-cover-featured {
-    aspect-ratio: unset;
-    height: 100%;
-    min-height: 280px;
-  }
-  @media (max-width: 639px) {
-    .bp-cover-featured {
-      height: auto;
-      min-height: 0;
-      aspect-ratio: 16 / 9;
-    }
-  }
-
   .bp-pin {
-    position: absolute;
-    top: 12px;
-    left: 12px;
-    z-index: 2;
-    padding: 5px 11px;
+    padding: 3px 10px;
     background: var(--accent);
     color: #0b0c10;
     border-radius: 999px;
